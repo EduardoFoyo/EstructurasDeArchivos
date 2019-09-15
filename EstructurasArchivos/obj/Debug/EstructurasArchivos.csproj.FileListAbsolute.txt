@@ -1,0 +1,11 @@
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\bin\Debug\EstructurasArchivos.exe.config
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\bin\Debug\EstructurasArchivos.exe
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\bin\Debug\EstructurasArchivos.pdb
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.csprojAssemblyReference.cache
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.Form1.resources
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.Properties.Resources.resources
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.csproj.GenerateResource.cache
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.csproj.CoreCompileInputs.cache
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.exe
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.pdb
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.CrearTabla.resources
