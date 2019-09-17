@@ -47,12 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Atributo.cs" />
-    <Compile Include="CrearTabla.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CrearTabla.Designer.cs">
-      <DependentUpon>CrearTabla.cs</DependentUpon>
-    </Compile>
     <Compile Include="Entidad.cs" />
     <Compile Include="File.cs" />
     <Compile Include="Form1.cs">
@@ -63,9 +57,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="CrearTabla.resx">
-      <DependentUpon>CrearTabla.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

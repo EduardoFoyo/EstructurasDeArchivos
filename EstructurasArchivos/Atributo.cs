@@ -8,36 +8,25 @@ namespace EstructurasArchivos
 {
     class Atributo
     {
-        string nombre;
-        string tipo;
-        int longitud;
-        int tipoIndice;
-        string entidad;
+        public string id;
+        public string nombre;
+        public char tipo;
+        public int longitud;
+        public long direccion;
+        public int tipoId;
+        public long dirDatos;
+        public long dirSiguiente;
 
-        public Atributo(string text, string v1, int v2, int v3, string v4)
+        public Atributo(string id, string nombre, char tipo, int longitud, long direccion, int tipoId, long dirDatos, long dirSiguiente)
         {
-            this.nombre = text;
-            this.tipo = v1;
-            this.longitud = v2;
-            this.tipoIndice = v3;
-            this.entidad = v4;
-        }
-
-        public string GetNombre()
-        {
-            return nombre;
-        }
-        public string GetTipo()
-        {
-            return tipo;
-        }
-        public int GetLongitud()
-        {
-            return longitud;
-        }
-        public int GetTipoIndice()
-        {
-            return tipoIndice;
+            this.id = id;
+            this.nombre = nombre;
+            this.tipo = tipo;
+            this.longitud = longitud;
+            this.direccion = direccion;
+            this.tipoId = tipoId;
+            this.dirDatos = dirDatos;
+            this.dirSiguiente = dirSiguiente;
         }
     }
 }
