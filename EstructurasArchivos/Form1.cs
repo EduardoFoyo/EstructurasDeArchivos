@@ -14,7 +14,6 @@ namespace EstructurasArchivos
     public partial class cargarAtributos : Form
     {
         FileStream file;
-
         long cab_aux;
         List<Entidad> listEntidades;
         List<Atributo> listAtributos;
@@ -51,6 +50,7 @@ namespace EstructurasArchivos
                 file.Seek(0, SeekOrigin.Begin);
                 long aux = cab_aux;
                 cab_aux = binaryReader.ReadInt64();
+                textCab.Text = cab_aux.ToString();
                 if (file.Length > 8)
                 {
                     guardarDatos();
@@ -67,6 +67,7 @@ namespace EstructurasArchivos
             BinaryReader binaryReader = new BinaryReader(file);
             file.Seek(0, SeekOrigin.Begin);
             long cab = binaryReader.ReadInt64();
+            textCab.Text = cab.ToString();
             if (cab == -1)
             {
 
@@ -434,19 +435,113 @@ namespace EstructurasArchivos
 
         private void EntidadEditar_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < listEntidades.Count; i++)
-            {
-                if (listEntidades[i].nombre == editarEntidad.Text)
-                {
-                    BinaryWriter binaryWriter = new BinaryWriter(file);
-                    BinaryReader binaryReader = new BinaryReader(file);
-                    file.Position = listEntidades[i].direccion + 5;
-                    binaryWriter.Write(nombreEntidadNuevo.Text.PadRight(34));
+            MessageBox.Show("Modificacion");
+            string nombre_nuevo = nombreEntidadNuevo.Text;
+            int indice_modificar = editarEntidad.Items.IndexOf(editarEntidad.Text);
+            BinaryWriter binaryWriter = new BinaryWriter(file);
+            BinaryReader binaryReader = new BinaryReader(file);
+            file.Position = 0;
+            long cab = binaryReader.ReadInt64();
 
-                    nombreEntidadNuevo.Clear();
-                    editarEntidad.SelectedItem = null;
-                    break;
+            if (listEntidades[indice_modificar].nombre != nombre_nuevo)
+            {
+                if (listEntidades[indice_modificar].direccion == cab)
+                {
+                    if (listEntidades[indice_modificar].direccion_sig != -1)
+                    {
+                        file.Position = 0;
+                        binaryWriter.Write(listEntidades[indice_modificar].direccion_sig);
+                    }
+                    else
+                    {
+                        /*file.Position = 0;
+                        binaryWriter.Write((long)-1);*/
+                    }
                 }
+                else
+                {
+                    if (listEntidades[indice_modificar].direccion_sig != -1)
+                    {
+                        for (int i = 0; i < listEntidades.Count; i++)
+                        {
+                            if (listEntidades[i].direccion_sig == listEntidades[indice_modificar].direccion)
+                            {
+                                file.Position = listEntidades[i].direccion + 64;
+                                binaryWriter.Write(listEntidades[indice_modificar].direccion_sig);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < listEntidades.Count; i++)
+                        {
+                            if (listEntidades[i].direccion_sig == listEntidades[indice_modificar].direccion)
+                            {
+                                file.Position = listEntidades[i].direccion + 64;
+                                binaryWriter.Write((long)-1);
+                            }
+                        }
+                    }
+                }
+
+                long apunta;
+
+
+                long aux_dir_anterior;
+
+                aux_dir_anterior = cab;
+
+                file.Position = cab + 5;
+                string aux = binaryReader.ReadString(); //Recupera el nombre de la primera entidad a partir de la cabecera
+
+                if (string.Compare(nombre_nuevo, aux) == -1)  
+                {
+                    file.Position = 0;
+                    long modifucarCab = listEntidades[indice_modificar].direccion;
+                    binaryWriter.Write(modifucarCab);
+                    file.Position = listEntidades[indice_modificar].direccion + 64;    //Esta parte del codigo funciona cuando es insertar en la primera pocision
+                    binaryWriter.Write(aux_dir_anterior);
+                }
+                else
+                {
+                    do
+                    {
+                        file.Position = aux_dir_anterior + 64;
+                        apunta = binaryReader.ReadInt64();
+                        if (apunta == (long)-1)
+                        {
+                            file.Position = aux_dir_anterior + 64;
+                            long nuevo_siguiente = binaryReader.ReadInt64();
+                            file.Position = aux_dir_anterior + 64;
+                            binaryWriter.Write(listEntidades[indice_modificar].direccion);   //Este es el caso en el que va despues del utlimo ya funciona
+                            file.Position = listEntidades[indice_modificar].direccion + 64;
+                            binaryWriter.Write(nuevo_siguiente);
+                            break;
+                        }
+                        else
+                        {
+                            file.Position = apunta + 5;
+                            aux = binaryReader.ReadString();
+                            if (string.Compare(nombre_nuevo, aux) == -1)
+                            {
+                                file.Position = aux_dir_anterior + 64;
+                                binaryWriter.Write(listEntidades[indice_modificar].direccion);
+
+                                file.Position = listEntidades[indice_modificar].direccion + 64;
+                                binaryWriter.Write(apunta);
+                                break;
+                            }
+                        }
+                        file.Position = aux_dir_anterior + 64;                        
+                        aux_dir_anterior = binaryReader.ReadInt64();
+
+                    } while (apunta != (long)-1);
+                }
+                string nombre = nombre_nuevo.PadRight(34);
+                file.Position = listEntidades[indice_modificar].direccion + 5;
+                binaryWriter.Write(nombre);
+
+                guardarDatos();
             }
         }
 
@@ -500,6 +595,7 @@ namespace EstructurasArchivos
                             {
                                 file.Position = file.Position + 4;
                             }
+                            file.Position = file.Position + 8;
                             if (eTipoIndiceAtributo.Text != "")
                             {
                                 int indice = Int32.Parse(eTipoIndiceAtributo.Text);

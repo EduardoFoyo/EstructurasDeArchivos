@@ -94,13 +94,14 @@
             this.label18 = new System.Windows.Forms.Label();
             this.eliminarAtributo = new System.Windows.Forms.ComboBox();
             this.label19 = new System.Windows.Forms.Label();
+            this.textCab = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.entidades)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.atributos)).BeginInit();
             this.SuspendLayout();
             // 
             // createFile
             // 
-            this.createFile.Location = new System.Drawing.Point(691, 23);
+            this.createFile.Location = new System.Drawing.Point(12, 9);
             this.createFile.Name = "createFile";
             this.createFile.Size = new System.Drawing.Size(75, 23);
             this.createFile.TabIndex = 2;
@@ -110,7 +111,7 @@
             // 
             // openFile
             // 
-            this.openFile.Location = new System.Drawing.Point(691, 66);
+            this.openFile.Location = new System.Drawing.Point(93, 9);
             this.openFile.Name = "openFile";
             this.openFile.Size = new System.Drawing.Size(75, 23);
             this.openFile.TabIndex = 3;
@@ -121,7 +122,7 @@
             // label_entidad_nombre
             // 
             this.label_entidad_nombre.AutoSize = true;
-            this.label_entidad_nombre.Location = new System.Drawing.Point(9, 49);
+            this.label_entidad_nombre.Location = new System.Drawing.Point(594, 53);
             this.label_entidad_nombre.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_entidad_nombre.Name = "label_entidad_nombre";
             this.label_entidad_nombre.Size = new System.Drawing.Size(114, 17);
@@ -130,7 +131,7 @@
             // 
             // entityText
             // 
-            this.entityText.Location = new System.Drawing.Point(12, 69);
+            this.entityText.Location = new System.Drawing.Point(597, 73);
             this.entityText.Margin = new System.Windows.Forms.Padding(4);
             this.entityText.Name = "entityText";
             this.entityText.Size = new System.Drawing.Size(132, 22);
@@ -138,7 +139,7 @@
             // 
             // addEntity
             // 
-            this.addEntity.Location = new System.Drawing.Point(12, 98);
+            this.addEntity.Location = new System.Drawing.Point(597, 102);
             this.addEntity.Name = "addEntity";
             this.addEntity.Size = new System.Drawing.Size(132, 32);
             this.addEntity.TabIndex = 11;
@@ -149,7 +150,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(159, 94);
+            this.label3.Location = new System.Drawing.Point(744, 98);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(36, 17);
             this.label3.TabIndex = 16;
@@ -158,7 +159,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(162, 49);
+            this.label2.Location = new System.Drawing.Point(747, 53);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(111, 17);
             this.label2.TabIndex = 14;
@@ -166,7 +167,7 @@
             // 
             // nombreAtributo
             // 
-            this.nombreAtributo.Location = new System.Drawing.Point(161, 69);
+            this.nombreAtributo.Location = new System.Drawing.Point(746, 73);
             this.nombreAtributo.Name = "nombreAtributo";
             this.nombreAtributo.Size = new System.Drawing.Size(122, 22);
             this.nombreAtributo.TabIndex = 13;
@@ -174,7 +175,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(161, 187);
+            this.label5.Location = new System.Drawing.Point(746, 191);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(77, 17);
             this.label5.TabIndex = 20;
@@ -188,7 +189,7 @@
             "1",
             "2",
             "3"});
-            this.tipoIndiceAtributo.Location = new System.Drawing.Point(161, 207);
+            this.tipoIndiceAtributo.Location = new System.Drawing.Point(746, 211);
             this.tipoIndiceAtributo.Name = "tipoIndiceAtributo";
             this.tipoIndiceAtributo.Size = new System.Drawing.Size(122, 24);
             this.tipoIndiceAtributo.TabIndex = 19;
@@ -196,7 +197,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(161, 142);
+            this.label4.Location = new System.Drawing.Point(746, 146);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(63, 17);
             this.label4.TabIndex = 18;
@@ -204,14 +205,14 @@
             // 
             // longitudAtributo
             // 
-            this.longitudAtributo.Location = new System.Drawing.Point(161, 162);
+            this.longitudAtributo.Location = new System.Drawing.Point(746, 166);
             this.longitudAtributo.Name = "longitudAtributo";
             this.longitudAtributo.Size = new System.Drawing.Size(122, 22);
             this.longitudAtributo.TabIndex = 17;
             // 
             // agregarAtributo
             // 
-            this.agregarAtributo.Location = new System.Drawing.Point(161, 290);
+            this.agregarAtributo.Location = new System.Drawing.Point(746, 294);
             this.agregarAtributo.Name = "agregarAtributo";
             this.agregarAtributo.Size = new System.Drawing.Size(122, 26);
             this.agregarAtributo.TabIndex = 21;
@@ -229,11 +230,11 @@
             this.direccion_final,
             this.dataDireccion,
             this.sig_entidad});
-            this.entidades.Location = new System.Drawing.Point(12, 402);
+            this.entidades.Location = new System.Drawing.Point(12, 162);
             this.entidades.Name = "entidades";
             this.entidades.RowHeadersWidth = 51;
             this.entidades.RowTemplate.Height = 24;
-            this.entidades.Size = new System.Drawing.Size(1426, 135);
+            this.entidades.Size = new System.Drawing.Size(430, 135);
             this.entidades.TabIndex = 22;
             // 
             // id
@@ -266,7 +267,7 @@
             // 
             // dataDireccion
             // 
-            this.dataDireccion.HeaderText = "-1";
+            this.dataDireccion.HeaderText = "Direccion Datos";
             this.dataDireccion.MinimumWidth = 6;
             this.dataDireccion.Name = "dataDireccion";
             this.dataDireccion.Width = 125;
@@ -290,11 +291,11 @@
             this.tipo_indice,
             this.direccion_data,
             this.sig_atributo});
-            this.atributos.Location = new System.Drawing.Point(12, 543);
+            this.atributos.Location = new System.Drawing.Point(12, 303);
             this.atributos.Name = "atributos";
             this.atributos.RowHeadersWidth = 51;
             this.atributos.RowTemplate.Height = 24;
-            this.atributos.Size = new System.Drawing.Size(1426, 166);
+            this.atributos.Size = new System.Drawing.Size(430, 166);
             this.atributos.TabIndex = 23;
             // 
             // id_atributo
@@ -355,7 +356,7 @@
             // 
             // closeFile
             // 
-            this.closeFile.Location = new System.Drawing.Point(691, 108);
+            this.closeFile.Location = new System.Drawing.Point(174, 9);
             this.closeFile.Name = "closeFile";
             this.closeFile.Size = new System.Drawing.Size(75, 23);
             this.closeFile.TabIndex = 24;
@@ -365,7 +366,7 @@
             // 
             // cargarDatos
             // 
-            this.cargarDatos.Location = new System.Drawing.Point(637, 283);
+            this.cargarDatos.Location = new System.Drawing.Point(12, 73);
             this.cargarDatos.Name = "cargarDatos";
             this.cargarDatos.Size = new System.Drawing.Size(182, 49);
             this.cargarDatos.TabIndex = 25;
@@ -376,7 +377,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(161, 233);
+            this.label1.Location = new System.Drawing.Point(746, 237);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(56, 17);
             this.label1.TabIndex = 28;
@@ -385,7 +386,7 @@
             // selectEntidad
             // 
             this.selectEntidad.FormattingEnabled = true;
-            this.selectEntidad.Location = new System.Drawing.Point(161, 253);
+            this.selectEntidad.Location = new System.Drawing.Point(746, 257);
             this.selectEntidad.Name = "selectEntidad";
             this.selectEntidad.Size = new System.Drawing.Size(122, 24);
             this.selectEntidad.TabIndex = 29;
@@ -396,7 +397,7 @@
             this.tipoAtributo.Items.AddRange(new object[] {
             "E",
             "C"});
-            this.tipoAtributo.Location = new System.Drawing.Point(161, 115);
+            this.tipoAtributo.Location = new System.Drawing.Point(746, 119);
             this.tipoAtributo.Name = "tipoAtributo";
             this.tipoAtributo.Size = new System.Drawing.Size(121, 24);
             this.tipoAtributo.TabIndex = 30;
@@ -405,7 +406,7 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Arial Narrow", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(99, 9);
+            this.label6.Location = new System.Drawing.Point(684, 13);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(130, 33);
             this.label6.TabIndex = 31;
@@ -598,7 +599,7 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Arial Narrow", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(453, 9);
+            this.label16.Location = new System.Drawing.Point(952, 13);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(123, 33);
             this.label16.TabIndex = 54;
@@ -607,7 +608,7 @@
             // cargarEntidades
             // 
             this.cargarEntidades.FormattingEnabled = true;
-            this.cargarEntidades.Location = new System.Drawing.Point(663, 240);
+            this.cargarEntidades.Location = new System.Drawing.Point(12, 42);
             this.cargarEntidades.Name = "cargarEntidades";
             this.cargarEntidades.Size = new System.Drawing.Size(122, 24);
             this.cargarEntidades.TabIndex = 55;
@@ -615,7 +616,7 @@
             // elimEntidad
             // 
             this.elimEntidad.FormattingEnabled = true;
-            this.elimEntidad.Location = new System.Drawing.Point(382, 69);
+            this.elimEntidad.Location = new System.Drawing.Point(881, 73);
             this.elimEntidad.Name = "elimEntidad";
             this.elimEntidad.Size = new System.Drawing.Size(121, 24);
             this.elimEntidad.TabIndex = 56;
@@ -623,7 +624,7 @@
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(388, 49);
+            this.label17.Location = new System.Drawing.Point(887, 53);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(110, 17);
             this.label17.TabIndex = 57;
@@ -631,7 +632,7 @@
             // 
             // botonEliminaEntidad
             // 
-            this.botonEliminaEntidad.Location = new System.Drawing.Point(382, 99);
+            this.botonEliminaEntidad.Location = new System.Drawing.Point(881, 103);
             this.botonEliminaEntidad.Name = "botonEliminaEntidad";
             this.botonEliminaEntidad.Size = new System.Drawing.Size(121, 32);
             this.botonEliminaEntidad.TabIndex = 58;
@@ -641,7 +642,7 @@
             // 
             // elimAtributo
             // 
-            this.elimAtributo.Location = new System.Drawing.Point(520, 180);
+            this.elimAtributo.Location = new System.Drawing.Point(1019, 184);
             this.elimAtributo.Name = "elimAtributo";
             this.elimAtributo.Size = new System.Drawing.Size(121, 32);
             this.elimAtributo.TabIndex = 64;
@@ -651,7 +652,7 @@
             // 
             // eliminaCargarEntidades
             // 
-            this.eliminaCargarEntidades.Location = new System.Drawing.Point(521, 99);
+            this.eliminaCargarEntidades.Location = new System.Drawing.Point(1020, 103);
             this.eliminaCargarEntidades.Name = "eliminaCargarEntidades";
             this.eliminaCargarEntidades.Size = new System.Drawing.Size(120, 28);
             this.eliminaCargarEntidades.TabIndex = 63;
@@ -662,7 +663,7 @@
             // elimEntidadAtributo
             // 
             this.elimEntidadAtributo.FormattingEnabled = true;
-            this.elimEntidadAtributo.Location = new System.Drawing.Point(521, 69);
+            this.elimEntidadAtributo.Location = new System.Drawing.Point(1020, 73);
             this.elimEntidadAtributo.Name = "elimEntidadAtributo";
             this.elimEntidadAtributo.Size = new System.Drawing.Size(121, 24);
             this.elimEntidadAtributo.TabIndex = 62;
@@ -670,7 +671,7 @@
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(520, 130);
+            this.label18.Location = new System.Drawing.Point(1019, 134);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(57, 17);
             this.label18.TabIndex = 61;
@@ -679,7 +680,7 @@
             // eliminarAtributo
             // 
             this.eliminarAtributo.FormattingEnabled = true;
-            this.eliminarAtributo.Location = new System.Drawing.Point(520, 150);
+            this.eliminarAtributo.Location = new System.Drawing.Point(1019, 154);
             this.eliminarAtributo.Name = "eliminarAtributo";
             this.eliminarAtributo.Size = new System.Drawing.Size(121, 24);
             this.eliminarAtributo.TabIndex = 60;
@@ -687,17 +688,27 @@
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(520, 49);
+            this.label19.Location = new System.Drawing.Point(1019, 53);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(56, 17);
             this.label19.TabIndex = 59;
             this.label19.Text = "Entidad";
+            // 
+            // textCab
+            // 
+            this.textCab.AutoSize = true;
+            this.textCab.Location = new System.Drawing.Point(12, 142);
+            this.textCab.Name = "textCab";
+            this.textCab.Size = new System.Drawing.Size(33, 17);
+            this.textCab.TabIndex = 65;
+            this.textCab.Text = "Cab";
             // 
             // cargarAtributos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1450, 721);
+            this.Controls.Add(this.textCab);
             this.Controls.Add(this.elimAtributo);
             this.Controls.Add(this.eliminaCargarEntidades);
             this.Controls.Add(this.elimEntidadAtributo);
@@ -788,12 +799,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox selectEntidad;
         private System.Windows.Forms.ComboBox tipoAtributo;
-        private System.Windows.Forms.DataGridViewTextBoxColumn id;
-        private System.Windows.Forms.DataGridViewTextBoxColumn nombreEntidad;
-        private System.Windows.Forms.DataGridViewTextBoxColumn direccion;
-        private System.Windows.Forms.DataGridViewTextBoxColumn direccion_final;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataDireccion;
-        private System.Windows.Forms.DataGridViewTextBoxColumn sig_entidad;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox nombreEntidadNuevo;
@@ -826,6 +831,13 @@
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox eliminarAtributo;
         private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.DataGridViewTextBoxColumn id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn nombreEntidad;
+        private System.Windows.Forms.DataGridViewTextBoxColumn direccion;
+        private System.Windows.Forms.DataGridViewTextBoxColumn direccion_final;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataDireccion;
+        private System.Windows.Forms.DataGridViewTextBoxColumn sig_entidad;
+        private System.Windows.Forms.Label textCab;
     }
 }
 

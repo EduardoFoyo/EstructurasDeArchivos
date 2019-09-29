@@ -24,5 +24,10 @@ namespace EstructurasArchivos
             this.dirNose = dirNose;
             this.direccion_sig = direccion_sig;
         }
+
+        public static implicit operator long(Entidad v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
