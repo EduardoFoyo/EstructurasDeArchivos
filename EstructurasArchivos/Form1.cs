@@ -14,6 +14,7 @@ namespace EstructurasArchivos
     public partial class cargarAtributos : Form
     {
         FileStream file;
+        FileStream dataFile;
         long cab_aux;
         List<Entidad> listEntidades;
         List<Atributo> listAtributos;
@@ -38,7 +39,6 @@ namespace EstructurasArchivos
                 file.Close();
             }
         }
-
         private void OpenFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -59,6 +59,10 @@ namespace EstructurasArchivos
 
 
 
+        }
+        private void CloseFile_Click(object sender, EventArgs e)
+        {
+            file.Close();
         }
 
         private void guardarDatos()
@@ -82,15 +86,15 @@ namespace EstructurasArchivos
 
                     string[] antributo = new string[6];
 
-                    string id = Encoding.ASCII.GetString(binaryReader.ReadBytes(5));
+                    string id = BitConverter.ToString(binaryReader.ReadBytes(5));
                     string nombre = binaryReader.ReadString();
                     long direccion = binaryReader.ReadInt64();
                     long direccion_atributos = binaryReader.ReadInt64();
-                    long dirNose = binaryReader.ReadInt64();
+                    long dir_data = binaryReader.ReadInt64();
                     direccion_sig = binaryReader.ReadInt64();
 
 
-                    Entidad e = new Entidad(id, nombre, direccion, direccion_atributos, dirNose, direccion_sig);
+                    Entidad e = new Entidad(id, nombre, direccion, direccion_atributos, dir_data, direccion_sig);
                     listEntidades.Add(e);
 
 
@@ -103,47 +107,63 @@ namespace EstructurasArchivos
                 } while (direccion_sig != -1);
 
                 selectEntidad.Items.Clear();
+                cargarEntidades.Items.Clear();
+                elimEntidadAtributo.Items.Clear();
+                elimEntidad.Items.Clear();
+                editarEntidad.Items.Clear();
+                editarEntAtri.Items.Clear();
+                entidadInsertarEntidad.Items.Clear();
+
                 for (int i = 0; i < listEntidades.Count; i++)
                 {
                     selectEntidad.Items.Add(listEntidades[i].nombre);
-                }
-
-                cargarEntidades.Items.Clear();
-                for (int i = 0; i < listEntidades.Count; i++)
-                {
                     cargarEntidades.Items.Add(listEntidades[i].nombre);
-                }
-
-                elimEntidadAtributo.Items.Clear();
-                for (int i = 0; i < listEntidades.Count; i++)
-                {
                     elimEntidadAtributo.Items.Add(listEntidades[i].nombre);
-                }
-
-
-                elimEntidad.Items.Clear();
-                for (int i = 0; i < listEntidades.Count; i++)
-                {
                     elimEntidad.Items.Add(listEntidades[i].nombre);
-                }
-
-
-                editarEntidad.Items.Clear();
-                for (int i = 0; i < listEntidades.Count; i++)
-                {
                     editarEntidad.Items.Add(listEntidades[i].nombre);
+                    editarEntAtri.Items.Add(listEntidades[i].nombre);
+                    entidadInsertarEntidad.Items.Add(listEntidades[i].nombre);
                 }
 
-                editarEntAtri.Items.Clear();
-                for (int i = 0; i < listEntidades.Count; i++)
+
+                entidades.Rows.Clear();
+                atributos.Rows.Clear();
+                guardarAtributos(cargarEntidades.Text);
+
+
+                for (int j = 0; j < listEntidades.Count; j++)
                 {
-                    editarEntAtri.Items.Add(listEntidades[i].nombre);
+                    string[] entidad = new string[6];
+                    entidad[0] = 
+                        
+                        listEntidades[j].id;
+                    entidad[1] = listEntidades[j].nombre;
+                    entidad[2] = listEntidades[j].direccion.ToString();
+                    entidad[3] = listEntidades[j].direccion_atributos.ToString();
+                    entidad[4] = listEntidades[j].dir_data.ToString();
+                    entidad[5] = listEntidades[j].direccion_sig.ToString();
+                    entidades.Rows.Add(entidad);
+                }
+
+
+
+
+                for (int j = 0; j < listAtributos.Count; j++)
+                {
+                    string[] atributo = new string[8];
+                    atributo[0] = listAtributos[j].id;
+                    atributo[1] = listAtributos[j].nombre;
+                    atributo[2] = listAtributos[j].tipo.ToString();
+                    atributo[3] = listAtributos[j].longitud.ToString();
+                    atributo[4] = listAtributos[j].direccion.ToString();
+                    atributo[5] = listAtributos[j].tipoId.ToString();
+                    atributo[6] = listAtributos[j].dirDatos.ToString();
+                    atributo[7] = listAtributos[j].dirSiguiente.ToString();
+                    atributos.Rows.Add(atributo);
                 }
             }
 
         }
-
-
         public void guardarAtributos(string seleccion)
         {
             listAtributos.Clear();
@@ -165,7 +185,8 @@ namespace EstructurasArchivos
                         do
                         {
                             //string id = new string(binaryReader.ReadChars(5));
-                            string id = Encoding.ASCII.GetString(binaryReader.ReadBytes(5));
+                            //string id = Encoding.ASCII.GetString();
+                            string id = BitConverter.ToString(binaryReader.ReadBytes(5));
                             string nombre = binaryReader.ReadString();
                             char tipo = binaryReader.ReadChar();
                             int longitud = binaryReader.ReadInt32();
@@ -310,17 +331,8 @@ namespace EstructurasArchivos
             }
             guardarDatos();
         }
-
-        public byte[] generarId()
-        {
-            byte[] buffer = new byte[5];
-            new Random().NextBytes(buffer);
-            return buffer;
-        }
-
         private void AgregarAtributo_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Atributo Agregada");
             listAtributos.Clear();
             BinaryWriter binaryWriter = new BinaryWriter(file);
             BinaryReader binaryReader = new BinaryReader(file);
@@ -334,7 +346,8 @@ namespace EstructurasArchivos
             char tipo = char.Parse(tipoAtributo.Text);
             int longitud = Int32.Parse(longitudAtributo.Text);
             long direccion_atributo = file.Length;
-            int tipo_indice = Int32.Parse(tipoIndiceAtributo.SelectedItem.ToString());
+            int tipo_indice = tipoIndiceAtributo.Items.IndexOf(tipoIndiceAtributo.Text);
+            //int tipo_indice = Int32.Parse(tipoIndiceAtributo.SelectedItem.ToString());
             long dir_datos = -1;
             long dir_siguiente_atributo = -1;
             string entidad = selectEntidad.Text.ToString();
@@ -380,57 +393,25 @@ namespace EstructurasArchivos
 
                 }
             }
+            guardarDatos();
 
+            MessageBox.Show("Atributo Agregada");
             nombreAtributo.Clear();
             tipoAtributo.SelectedItem = null;
             tipoIndiceAtributo.SelectedItem = null;
             longitudAtributo.Clear();
         }
 
-        private void CloseFile_Click(object sender, EventArgs e)
+        public byte[] generarId()
         {
-            file.Close();
+            byte[] buffer = new byte[5];
+            new Random().NextBytes(buffer);
+            return buffer;
         }
-
         private void CargarDatos_Click(object sender, EventArgs e)
         {
-            entidades.Rows.Clear();
-            atributos.Rows.Clear();
             guardarDatos();
             guardarAtributos(cargarEntidades.Text);
-
-
-            for (int j = 0; j < listEntidades.Count; j++)
-            {
-                string[] entidad = new string[6];
-                entidad[0] = listEntidades[j].id;
-                entidad[1] = listEntidades[j].nombre;
-                entidad[2] = listEntidades[j].direccion.ToString();
-                entidad[3] = listEntidades[j].direccion_atributos.ToString();
-                entidad[4] = listEntidades[j].dirNose.ToString();
-                entidad[5] = listEntidades[j].direccion_sig.ToString();
-                entidades.Rows.Add(entidad);
-            }
-
-
-
-
-            for (int j = 0; j < listAtributos.Count; j++)
-            {
-                string[] atributo = new string[8];
-                atributo[0] = listAtributos[j].id;
-                atributo[1] = listAtributos[j].nombre;
-                atributo[2] = listAtributos[j].tipo.ToString();
-                atributo[3] = listAtributos[j].longitud.ToString();
-                atributo[4] = listAtributos[j].direccion.ToString();
-                atributo[5] = listAtributos[j].tipoId.ToString();
-                atributo[6] = listAtributos[j].dirDatos.ToString();
-                atributo[7] = listAtributos[j].dirSiguiente.ToString();
-                atributos.Rows.Add(atributo);
-            }
-
-
-
         }
 
         private void EntidadEditar_Click(object sender, EventArgs e)
@@ -544,8 +525,6 @@ namespace EstructurasArchivos
                 guardarDatos();
             }
         }
-
-
         private void CargarAtrib_Click(object sender, EventArgs e)
         {
             editarAtributo.Items.Clear();
@@ -555,7 +534,15 @@ namespace EstructurasArchivos
                 editarAtributo.Items.Add(listAtributos[i].nombre);
             }
         }
-
+        private void EliminaCargarEntidades_Click(object sender, EventArgs e)
+        {
+            eliminarAtributo.Items.Clear();
+            guardarAtributos(elimEntidadAtributo.Text);
+            for (int i = 0; i < listAtributos.Count; i++)
+            {
+                eliminarAtributo.Items.Add(listAtributos[i].nombre);
+            }
+        }
         private void BEditarAtributo_Click(object sender, EventArgs e)
         {
             BinaryWriter binaryWriter = new BinaryWriter(file);
@@ -609,12 +596,12 @@ namespace EstructurasArchivos
                     }
                 }
             }
+            guardarDatos();
             eNombreAtributo.Clear();
             eTipoAtributo.SelectedItem = null;
             eLongitudEntidad.Clear();
             eTipoIndiceAtributo.SelectedItem = null;
         }
-
         private void BotonEliminaEntidad_Click(object sender, EventArgs e)
         {
             BinaryWriter binaryWriter = new BinaryWriter(file);
@@ -659,18 +646,8 @@ namespace EstructurasArchivos
                 
                 }
             }
+            guardarDatos();
         }
-
-        private void EliminaCargarEntidades_Click(object sender, EventArgs e)
-        {
-            eliminarAtributo.Items.Clear();
-            guardarAtributos(elimEntidadAtributo.Text);
-            for (int i = 0; i < listAtributos.Count; i++)
-            {
-                eliminarAtributo.Items.Add(listAtributos[i].nombre);
-            }
-        }
-
         private void ElimAtributo_Click(object sender, EventArgs e)
         {
             BinaryWriter binaryWriter = new BinaryWriter(file);
@@ -715,7 +692,105 @@ namespace EstructurasArchivos
                     }
                 }
             }
+            guardarDatos();
         }
 
+        private void InsertarRegistroBoton_Click(object sender, EventArgs e)
+        {
+            if (entidadInsertarEntidad.Text != "")
+            {
+                int id = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+                guardarAtributos(entidadInsertarEntidad.Text);
+
+                for (int i = 0; i < listAtributos.Count; i++)
+                {
+                    DataGridViewTextBoxColumn column = new DataGridViewTextBoxColumn();
+                    column.Name = listAtributos[i].nombre;
+                    tablaInsertarRegistro.Columns.Add(column);
+                }
+
+            }
+        }
+
+        private void GuardarRegistroBoton_Click(object sender, EventArgs e)
+        {
+            int contIndices=0;
+            int cve_busqueda=0;
+            int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+            for (int i = 0; i < listAtributos.Count; i++)
+            {
+                if (listAtributos[i].tipoId == 2)
+                {
+                    contIndices++;
+                }
+                if (listAtributos[i].tipoId == 1)
+                {
+                    cve_busqueda++;
+                }
+            }
+
+            if (contIndices == 1)
+            {
+                if (cve_busqueda == 1)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                if (cve_busqueda == 1)
+                {
+
+                }
+                else
+                {
+                    if (listEntidades[clave_entidad].dir_data == -1)
+                    {
+                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+                        dataFile = new FileStream(nombre_archivo, FileMode.Create);
+                        dataFile.Close();
+                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                        BinaryWriter binaryWriter = new BinaryWriter(file);
+                        BinaryWriter dbw = new BinaryWriter(dataFile);
+                        file.Position = listEntidades[clave_entidad].direccion + 56;
+                        binaryWriter.Write((long)0);
+
+                        dataFile.Position = 0;
+                        dbw.Write((long)0);
+                        for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                        {
+                            if (listAtributos[i].tipo == 'E')
+                            {
+                                int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value); 
+                                dbw.Write(dataInsertar);
+                            }
+                            else if (listAtributos[i].tipo == 'C')
+                            {
+                                string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
+                                dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud);
+                                dbw.Write(dataInsertar);
+                            }
+                        }
+                        dbw.Write((long)(file.Length + 8));
+                        dataFile.Close();
+                    }
+                    else
+                    {
+                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                    }
+                }
+            }
+
+            /*for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+            {
+                var a = tablaInsertarRegistro.SelectedCells[i].Value;
+            }*/
+            
+        }
     }
 }
