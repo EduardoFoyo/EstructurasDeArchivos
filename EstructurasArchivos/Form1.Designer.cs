@@ -100,6 +100,8 @@
             this.insertarRegistroBoton = new System.Windows.Forms.Button();
             this.tablaInsertarRegistro = new System.Windows.Forms.DataGridView();
             this.guardarRegistroBoton = new System.Windows.Forms.Button();
+            this.mostrarRegistros = new System.Windows.Forms.Button();
+            this.MuestraIndice = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.entidades)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.atributos)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tablaInsertarRegistro)).BeginInit();
@@ -749,19 +751,41 @@
             // 
             // guardarRegistroBoton
             // 
-            this.guardarRegistroBoton.Location = new System.Drawing.Point(244, 604);
+            this.guardarRegistroBoton.Location = new System.Drawing.Point(235, 603);
             this.guardarRegistroBoton.Name = "guardarRegistroBoton";
-            this.guardarRegistroBoton.Size = new System.Drawing.Size(168, 32);
+            this.guardarRegistroBoton.Size = new System.Drawing.Size(201, 32);
             this.guardarRegistroBoton.TabIndex = 70;
             this.guardarRegistroBoton.Text = "Guardar Registro";
             this.guardarRegistroBoton.UseVisualStyleBackColor = true;
             this.guardarRegistroBoton.Click += new System.EventHandler(this.GuardarRegistroBoton_Click);
+            // 
+            // mostrarRegistros
+            // 
+            this.mostrarRegistros.Location = new System.Drawing.Point(442, 604);
+            this.mostrarRegistros.Name = "mostrarRegistros";
+            this.mostrarRegistros.Size = new System.Drawing.Size(177, 32);
+            this.mostrarRegistros.TabIndex = 71;
+            this.mostrarRegistros.Text = "Mostrar Registros";
+            this.mostrarRegistros.UseVisualStyleBackColor = true;
+            this.mostrarRegistros.Click += new System.EventHandler(this.MostrarRegistros_Click);
+            // 
+            // MuestraIndice
+            // 
+            this.MuestraIndice.Location = new System.Drawing.Point(442, 564);
+            this.MuestraIndice.Name = "MuestraIndice";
+            this.MuestraIndice.Size = new System.Drawing.Size(177, 34);
+            this.MuestraIndice.TabIndex = 72;
+            this.MuestraIndice.Text = "MuestraIndice";
+            this.MuestraIndice.UseVisualStyleBackColor = true;
+            this.MuestraIndice.Click += new System.EventHandler(this.MuestraIndice_Click);
             // 
             // cargarAtributos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1488, 750);
+            this.Controls.Add(this.MuestraIndice);
+            this.Controls.Add(this.mostrarRegistros);
             this.Controls.Add(this.guardarRegistroBoton);
             this.Controls.Add(this.tablaInsertarRegistro);
             this.Controls.Add(this.insertarRegistroBoton);
@@ -903,6 +927,8 @@
         private System.Windows.Forms.Button insertarRegistroBoton;
         private System.Windows.Forms.DataGridView tablaInsertarRegistro;
         private System.Windows.Forms.Button guardarRegistroBoton;
+        private System.Windows.Forms.Button mostrarRegistros;
+        private System.Windows.Forms.Button MuestraIndice;
     }
 }
 

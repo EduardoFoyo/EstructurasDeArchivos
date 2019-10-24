@@ -8,3 +8,4 @@ C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\Es
 C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.exe
 C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.pdb
 C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.cargarAtributos.resources
+C:\Users\eduar\source\repos\EstructurasArchivos\EstructurasArchivos\obj\Debug\EstructurasArchivos.Indice.resources

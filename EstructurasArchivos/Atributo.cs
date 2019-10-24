@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EstructurasArchivos
 {
-    class Atributo
+    public class Atributo
     {
         public string id;
         public string nombre;
