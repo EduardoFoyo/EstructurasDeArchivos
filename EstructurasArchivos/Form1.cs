@@ -16,6 +16,15 @@ namespace EstructurasArchivos
         FileStream file;
         FileStream dataFile;
         FileStream indexFile;
+        FileStream indexSecundarioFile;
+        FileStream indexArbolPrimarioFile;
+        FileStream indexArbolSecundarioFile;
+        FileStream archivoArbol;
+
+        public const int TAMANIO_BLOQUE = 2048;
+
+        public const int NREGISTROS_SENCILLOS = (TAMANIO_BLOQUE - 8) / 8;
+
         long cab_aux;
         List<Entidad> listEntidades;
         List<Atributo> listAtributos;
@@ -135,8 +144,8 @@ namespace EstructurasArchivos
                 for (int j = 0; j < listEntidades.Count; j++)
                 {
                     string[] entidad = new string[6];
-                    entidad[0] = 
-                        
+                    entidad[0] =
+
                         listEntidades[j].id;
                     entidad[1] = listEntidades[j].nombre;
                     entidad[2] = listEntidades[j].direccion.ToString();
@@ -476,7 +485,7 @@ namespace EstructurasArchivos
                 file.Position = cab + 5;
                 string aux = binaryReader.ReadString(); //Recupera el nombre de la primera entidad a partir de la cabecera
 
-                if (string.Compare(nombre_nuevo, aux) == -1)  
+                if (string.Compare(nombre_nuevo, aux) == -1)
                 {
                     file.Position = 0;
                     long modifucarCab = listEntidades[indice_modificar].direccion;
@@ -514,7 +523,7 @@ namespace EstructurasArchivos
                                 break;
                             }
                         }
-                        file.Position = aux_dir_anterior + 64;                        
+                        file.Position = aux_dir_anterior + 64;
                         aux_dir_anterior = binaryReader.ReadInt64();
 
                     } while (apunta != (long)-1);
@@ -644,7 +653,7 @@ namespace EstructurasArchivos
 
 
                     }
-                
+
                 }
             }
             guardarDatos();
@@ -661,7 +670,7 @@ namespace EstructurasArchivos
                     {
                         if (listAtributos[j].nombre == eliminarAtributo.Text)
                         {
-                            
+
                             if (listEntidades[i].direccion_atributos == listAtributos[j].direccion)
                             {
                                 if (listAtributos[j].dirSiguiente == -1)
@@ -677,7 +686,7 @@ namespace EstructurasArchivos
                             }
                             else
                             {
-                                
+
                                 if (listAtributos[j].dirSiguiente == -1)
                                 {
                                     file.Position = listAtributos[j - 1].direccion + 65;
@@ -713,490 +722,698 @@ namespace EstructurasArchivos
                     column.Name = listAtributos[i].nombre;
                     tablaInsertarRegistro.Columns.Add(column);
                 }
-
             }
         }
-
         private void GuardarRegistroBoton_Click(object sender, EventArgs e)
         {
+            Atributo atributoArbolPrimario = null;
+            Atributo atributoArbolSecundario = null;
             MessageBox.Show("Insertado");
-            int contIndices=0;
-            int cve_busqueda=0;
+            int num_atributo_ordenar = 0;
+            int num_indice = 0;
+            int num_indice_secundario = 0;
+            int num_arbol_primario = 0;
+            int num_arbol_secundario = 0;
+            int ordenar_por = 0;
+            string idAtributo = "";
+            string idAtributoSecundario = "";
+            string idAtributoArbolPrimario = "";
+            string idAtributoArbolSecundario = "";
+            string nombre_ordenado = "";
+            int contIndices = 0;
+            int contIndicesSecundario = 0;
+            int contArbolPrimario = 0;
+            int contArbolSecundario = 0;
+            int cve_busqueda = 0;
+            int tam_registro = 0;
+            int tam_registro_secundario = 0;
+            int tipo_registro = 0;
+            int tipo_registro_secundario = 0;
+            bool existe = false;
+            long dir = 0;
             int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+
+            guardarAtributos(entidadInsertarEntidad.Text);
+
+            BinaryWriter idw = null;
+            BinaryReader idr = null;
+
+            BinaryWriter isdw = null;
+            BinaryReader isdr = null;
+
+            BinaryWriter iapdw = null;
+            BinaryReader iapdr = null;
+
+            BinaryWriter iasdw = null;
+            BinaryReader iasdr = null;
+
+
             for (int i = 0; i < listAtributos.Count; i++)
             {
-                if (listAtributos[i].tipoId == 2)
-                {
-                    contIndices++;
-                }
                 if (listAtributos[i].tipoId == 1)
                 {
+                    if (listAtributos[i].tipo == 'E')
+                    {
+                        ordenar_por = 0;
+                    }
+                    else if (listAtributos[i].tipo == 'C')
+                    {
+                        ordenar_por = 1;
+                    }
+                    num_atributo_ordenar = i;
                     cve_busqueda++;
+                }
+                else if (listAtributos[i].tipoId == 2)
+                {
+                    idAtributo = listAtributos[i].id;
+                    num_indice = i;
+                    contIndices++;
+                }
+                else if (listAtributos[i].tipoId == 3)
+                {
+                    idAtributoSecundario = listAtributos[i].id;
+                    num_indice_secundario = i;
+                    contIndicesSecundario++;
+                }
+                else if (listAtributos[i].tipoId == 4)
+                {
+                    atributoArbolPrimario = listAtributos[i];
+                    idAtributoArbolPrimario = listAtributos[i].id;
+                    num_arbol_primario = i;
+                    contArbolPrimario++;
+                }
+                else if (listAtributos[i].tipoId == 5)
+                {
+                    atributoArbolSecundario = listAtributos[i];
+                    idAtributoArbolSecundario = listAtributos[i].id;
+                    num_arbol_secundario = i;
+                    contArbolSecundario++;
                 }
             }
 
-            if (contIndices == 1)
+
+            
+
+                
+            if (listEntidades[clave_entidad].dir_data == -1)//Caso insertar primer registro sin claves 
             {
-                if (cve_busqueda == 1)
+                string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+                try
                 {
-                    int num_atributo_ordenar = 0;
-                    int num_indice = 0;
-                    int ordenar_por = 0;
-                    string idAtributo = "";
+                    dataFile = new FileStream(nombre_archivo, FileMode.Create);
+                }
+                catch (Exception)
+                {
 
-                    for (int i = 0; i < listAtributos.Count; i++)
+                    dataFile.Close();
+                    dataFile = new FileStream(nombre_archivo, FileMode.Create);
+
+                }
+
+                dataFile.Close();
+                dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+
+                if (contIndices == 1)
+                {
+                    string nomArchivoIndex = idAtributo + ".idx";
+                    indexFile = new FileStream(nomArchivoIndex, FileMode.Create);
+                    indexFile.Close();
+                    indexFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    idw = new BinaryWriter(indexFile);
+                    idr = new BinaryReader(indexFile);
+                }
+
+                if (contIndicesSecundario == 1)
+                {
+                    //CAMBIOS QUE NO CHEQUE SI FUNCIONAN
+                    string nomArchivoIndex = idAtributoSecundario + ".idx";
+                    try
                     {
-                        if (listAtributos[i].tipoId == 1)
-                        {
-                            if (listAtributos[i].tipo == 'E')
-                            {
-                                ordenar_por = 0;
-                            }
-                            else if (listAtributos[i].tipo == 'C')
-                            {
-                                ordenar_por = 1;
-                            }
-                            num_atributo_ordenar = i;  
-                            
-                        }else if (listAtributos[i].tipoId == 2)
-                        {
-                            idAtributo = listAtributos[i].id;
-                            num_indice = i;
-                        }
+                        indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Create);
                     }
-
-
-                    
-
-                    if (listEntidades[clave_entidad].dir_data == -1)
+                    catch (Exception)
                     {
-                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
-                        dataFile = new FileStream(nombre_archivo, FileMode.Create);
-
-                        string nomArchivoIndex = idAtributo + ".idx";
-                        indexFile = new FileStream(nomArchivoIndex, FileMode.Create);
-
-                        dataFile.Close();
-                        indexFile.Close();
-
-                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
-                        indexFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
-
-                        BinaryWriter binaryWriter = new BinaryWriter(file);
-                        BinaryWriter dbw = new BinaryWriter(dataFile);
-                        BinaryWriter idw = new BinaryWriter(indexFile);
-
-                        BinaryReader binaryReader = new BinaryReader(file);
-                        BinaryReader dbr = new BinaryReader(dataFile);
-                        BinaryReader idr = new BinaryReader(indexFile);
-
-                        file.Position = listEntidades[clave_entidad].direccion + 56;
-                        binaryWriter.Write((long)0);
-
-                        indexFile.Position = 0;
-
-                        dataFile.Position = 0;
-                        dbw.Write((long)0);
-                        for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
-                        {
-                            if (listAtributos[i].tipo == 'E')
-                            {
-                                int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value);
-                                dbw.Write(dataInsertar);
-                                if (listAtributos[i].tipoId == 2)
-                                {
-                                    file.Position = listAtributos[i].direccion + 57;
-                                    binaryWriter.Write((long)0);
-                                    int registrosIndice = 2040 / 12;
-                                    for (int j = 0; j < registrosIndice; j++)
-                                    {
-                                        idw.Write((int)0);
-                                        idw.Write((long)-1);
-                                    }
-                                    idw.Write((long)-1);
-                                    indexFile.Position = 0;
-                                    idw.Write(dataInsertar);
-                                    idw.Write((long)0);
-                                }
-                            }
-                            else if (listAtributos[i].tipo == 'C')
-                            {
-                                string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
-                                dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
-                                dbw.Write(dataInsertar);
-                                if (listAtributos[i].tipoId == 2)
-                                {
-                                    file.Position = listAtributos[i].direccion + 57;
-                                    binaryWriter.Write((long)0);
-                                    int registrosIndice = 2040 / listAtributos[i].longitud;
-                                    for (int j = 0; j < registrosIndice; j++)
-                                    {
-                                        idw.Write(dataInsertar);
-                                        idw.Write((long)-1);
-                                    }
-                                    idw.Write((long)-1);
-
-                                    indexFile.Position = 0;
-                                    idw.Write(dataInsertar);
-                                    idw.Write((long)0);
-                                }
-                            }
-                        }
-                        dbw.Write((long)-1);
-                        dataFile.Close();
-                        indexFile.Close();
 
                     }
-                    else
+                    indexSecundarioFile.Close();
+                    indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    isdw = new BinaryWriter(indexSecundarioFile);
+                    isdr = new BinaryReader(indexSecundarioFile);
+                }
+
+                if (contArbolPrimario == 1)
+                {
+                    if (!CondicionesIndPrimarioArbol(atributoArbolPrimario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value)))
+                    {
+                        return;
+                    }
+                    AccionesArbolPrimario(atributoArbolPrimario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value), dataFile.Length);
+                }
+
+                if (contArbolSecundario == 1)
+                {
+                    //Atributo atributo_secu_arbol = atributos[idx_atributo_secu_arbol];
+                    //AccionesArbolSecundario(atributoArbolSecundario, dataFile.Length, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value));
+                }
+
+                /*if (contArbolPrimario == 1)
+                {
+                    //CAMBIOS QUE NO CHEQUE SI FUNCIONAN
+                    string nomArchivoIndex = idAtributoArbolPrimario + ".idx";
+                    try
+                    {
+                        indexArbolPrimarioFile = new FileStream(nomArchivoIndex, FileMode.Create);
+                    }
+                    catch (Exception)
                     {
 
-                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
-                        string nomArchivoIndex = idAtributo + ".idx";
+                    }
+                    indexArbolPrimarioFile.Close();
+                    indexArbolPrimarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    iapdw = new BinaryWriter(indexArbolPrimarioFile);
+                    iapdr = new BinaryReader(indexArbolPrimarioFile);
+                }*/
 
-                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
-                        indexFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                if (contArbolSecundario == 1)
+                {
+                    //CAMBIOS QUE NO CHEQUE SI FUNCIONAN
+                    string nomArchivoIndex = idAtributoArbolSecundario + ".idx";
+                    try
+                    {
+                        indexArbolSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Create);
+                    }
+                    catch (Exception)
+                    {
 
-                        BinaryWriter binaryWriter = new BinaryWriter(file);
-                        BinaryWriter dbw = new BinaryWriter(dataFile);
-                        BinaryWriter idw = new BinaryWriter(indexFile);
+                    }
+                    indexArbolSecundarioFile.Close();
+                    indexArbolSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    iasdw = new BinaryWriter(indexArbolSecundarioFile);
+                    iasdr = new BinaryReader(indexArbolSecundarioFile);
+                }
 
-                        BinaryReader binaryReader = new BinaryReader(file);
-                        BinaryReader dbr = new BinaryReader(dataFile);
-                        BinaryReader idr = new BinaryReader(indexFile);
+
+                BinaryWriter binaryWriter = new BinaryWriter(file);
+                BinaryWriter dbw = new BinaryWriter(dataFile);
+
+                BinaryReader binaryReader = new BinaryReader(file);
+                BinaryReader dbr = new BinaryReader(dataFile);
+
+                file.Position = listEntidades[clave_entidad].direccion + 56;
+                binaryWriter.Write((long)0);
+
+                dataFile.Position = 0;
+                dbw.Write((long)0);
 
 
-                        int tam_registro = 0;
-                        int tipo_registro = 0;
-                        bool existe = false;
-                        long dir = 0;
-                        for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                {
+                    if (listAtributos[i].tipo == 'E')
+                    {
+                        int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value);
+                        dbw.Write(dataInsertar);
+                        if (contIndices == 1 && listAtributos[i].tipoId == 2)
                         {
-                            if (listAtributos[i].tipoId == 2)
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / 12;
+                            for (int j = 0; j < registrosIndice; j++)
                             {
-                                if (listAtributos[i].tipo == 'E')
-                                {
-                                    tipo_registro = 0;
-                                    tam_registro += 4;
-                                }
-                                else if (listAtributos[i].tipo == 'C')
-                                {
-                                    tipo_registro = 1;
-                                    tam_registro += listAtributos[i].longitud;
-                                }
+                                idw.Write((int)0);
+                                idw.Write((long)-1);
                             }
+                            idw.Write((long)-1);
+                            indexFile.Position = 0;
+                            idw.Write(dataInsertar);
+                            idw.Write((long)0);
                         }
 
-                        indexFile.Position = 0;
-                        while (dir != -1)
+                        if (contIndicesSecundario == 1 && listAtributos[i].tipoId == 3)
                         {
-                            if (tipo_registro == 0)
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / 12;
+                            for (int j = 0; j < registrosIndice; j++)
                             {
-                                int nuevo_int = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_indice].Value);
-                                int datoInt = idr.ReadInt32();
-                                dir = idr.ReadInt64();
-                                if (datoInt == nuevo_int)
-                                {
-                                    existe = true;
-                                    MessageBox.Show("No puedes utilizar 2 veces el mismo indice");
-                                }
+                                isdw.Write((int)0);
+                                isdw.Write((long)-1);
                             }
-                            else
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 0;
+                            isdw.Write(dataInsertar);
+                            isdw.Write((long)2048);
+                            int bloquesPequeños = 2040 / 8;
+                            indexSecundarioFile.Position = 2048;
+                            for (int j = 0; j < bloquesPequeños; j++)
                             {
-                                string nuevo_string = tablaInsertarRegistro.SelectedCells[num_indice].Value.ToString();
-                                string datoString = idr.ReadString();
-                                dir = idr.ReadInt64();
-                                if (datoString == nuevo_string)
-                                {
-                                    existe = true;
-                                    MessageBox.Show("No puedes utilizar 2 veces el mismo indice");
-                                }
+                                isdw.Write((long)-1);
                             }
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 2048;
+                            isdw.Write((long)0);
+                        }
+                    }
+                    else if (listAtributos[i].tipo == 'C')
+                    {
+                        string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
+                        dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
+                        dbw.Write(dataInsertar);
+                        if (contIndices == 1 && listAtributos[i].tipoId == 2)
+                        {
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / listAtributos[i].longitud;
+                            for (int j = 0; j < registrosIndice; j++)
+                            {
+                                idw.Write(dataInsertar);
+                                idw.Write((long)-1);
+                            }
+                            idw.Write((long)-1);
+
+                            indexFile.Position = 0;
+                            idw.Write(dataInsertar);
+                            idw.Write((long)0);
                         }
 
-                        if (!existe)
+                        if (contIndicesSecundario == 1 && listAtributos[i].tipoId == 3)
                         {
-                            while (true)
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / listAtributos[i].longitud;
+                            for (int j = 0; j < registrosIndice; j++)
                             {
-                                if (tipo_registro == 0)
-                                {
-                                   /* int actual = idr.ReadInt32();
-                                    long dir_actual = idr.ReadInt64();*/
-                                    /*if (dir_actual == -1)
-                                    {*/
-                                    int nuevo_int = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_indice].Value);
-                                    indexFile.Position = indexFile.Position - 8 - 4;
-                                    idw.Write(nuevo_int);
-                                    idw.Write(dataFile.Length);
-                                    break;
-                                   // }
-                                }
-                                else
-                                {
-                                    //string actual = idr.ReadString();
-                                    //long dir_actual = idr.ReadInt64();
-                                    /*if (dir_actual == -1)
-                                    {*/
-                                    string nuevo_string = tablaInsertarRegistro.SelectedCells[num_indice].Value.ToString();
-                                    indexFile.Position = indexFile.Position - 8 - tam_registro;
-                                    nuevo_string = nuevo_string.PadRight(tam_registro - 1);
-                                    idw.Write(nuevo_string);
-                                    idw.Write(dataFile.Length);
-                                    break;
-                                   // }
-                                }
+                                isdw.Write(dataInsertar);
+                                isdw.Write((long)-1);
                             }
-
-                            dataFile.Position = dataFile.Length;
-                            dbw.Write(dataFile.Length);
-                            for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 0;
+                            isdw.Write(dataInsertar);
+                            isdw.Write((long)2048);
+                            int bloquesPequeños = 2040 / 8;
+                            indexSecundarioFile.Position = 2048;
+                            for (int j = 0; j < bloquesPequeños; j++)
                             {
-                                if (listAtributos[i].tipo == 'E')
-                                {
-                                    int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value);
-                                    dbw.Write(dataInsertar);
-                                }
-                                else if (listAtributos[i].tipo == 'C')
-                                {
-                                    string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
-                                    dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
-                                    dbw.Write(dataInsertar);
-                                }
+                                isdw.Write((long)-1);
                             }
-                            dbw.Write((long)-1);
-
-                            if (ordenar_por == 0) //Ordenar por enteros 
-                            {
-                                MessageBox.Show("Ordenado por enteros");
-                                int nuevo_int = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_atributo_ordenar].Value);
-                                file.Position = listEntidades[clave_entidad].direccion + 56;
-                                long cab = binaryReader.ReadInt64();
-                                long apunta;
-                                long aux_dir_anterior;
-
-                                aux_dir_anterior = cab;
-
-                                int tamaño_registro = CalculaTamRegistro;
-                                int buscar_en = PosicionDeLaBusqueda;
-                                dataFile.Position = aux_dir_anterior + buscar_en;
-                                int int_anterior = dbr.ReadInt32();
-
-
-                                if (nuevo_int < int_anterior)
-                                {
-                                    MessageBox.Show("Entro uno nuevo a ordenar por encima");
-                                    file.Position = listEntidades[clave_entidad].direccion + 56;
-                                    binaryWriter.Write(dataFile.Length - tamaño_registro);
-                                    dataFile.Position = dataFile.Length - 8;
-                                    dbw.Write(aux_dir_anterior);
-                                }
-                                else
-                                {
-                                    do
-                                    {
-                                        dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
-                                        apunta = dbr.ReadInt64();
-
-                                        dataFile.Position = apunta + buscar_en;
-                                        int_anterior = dbr.ReadInt32();
-
-                                        if (apunta == (long)-1)
-                                        {
-                                            dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
-                                            dbw.Write(dataFile.Length - tamaño_registro);
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            dataFile.Position = apunta + buscar_en;
-                                            int_anterior = dbr.ReadInt32();
-
-                                            if (nuevo_int < int_anterior)
-                                            {
-                                                dataFile.Position = aux_dir_anterior + tamaño_registro - 8;
-                                                dbw.Write(dataFile.Length - tamaño_registro);
-
-                                                dataFile.Position = dataFile.Length - 8;
-                                                dbw.Write(apunta);
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                //dataFile.Position = apunta;
-                                                //aux_dir_anterior = dbr.ReadInt64();
-                                                aux_dir_anterior = apunta;
-                                            }
-                                        }
-
-
-                                        //} while (apunta != (long)-1);
-                                    } while (true);
-                                }
-
-
-                            }
-                            else //Ordenar por cadenas
-                            {
-                                MessageBox.Show("Ordenado por Cadena");
-                                string nuevo_string = tablaInsertarRegistro.SelectedCells[num_atributo_ordenar].Value.ToString();
-                                file.Position = listEntidades[clave_entidad].direccion + 56;
-                                long cab = binaryReader.ReadInt64();
-                                long apunta;
-                                long aux_dir_anterior;
-
-                                aux_dir_anterior = cab;
-
-                                int tamaño_registro = CalculaTamRegistro;
-                                int buscar_en = PosicionDeLaBusqueda;
-                                dataFile.Position = aux_dir_anterior + buscar_en;
-                                string string_anterior = dbr.ReadString();
-
-
-                                if (string.Compare(nuevo_string, string_anterior) == -1)
-                                {
-                                    file.Position = listEntidades[clave_entidad].direccion + 56;
-                                    binaryWriter.Write(dataFile.Length - tamaño_registro);
-                                    dataFile.Position = dataFile.Length - 8;
-                                    dbw.Write(aux_dir_anterior);
-                                }
-                                else
-                                {
-                                    do
-                                    {
-                                        dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
-                                        apunta = dbr.ReadInt64();
-
-                                        dataFile.Position = apunta + buscar_en;
-                                        string_anterior = dbr.ReadString();
-
-                                        if (apunta == (long)-1)
-                                        {
-                                            dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
-                                            dbw.Write(dataFile.Length - tamaño_registro);
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            dataFile.Position = apunta + buscar_en;
-                                            string_anterior = dbr.ReadString();
-
-                                            if (string.Compare(nuevo_string, string_anterior) == -1)
-                                            {
-                                                dataFile.Position = aux_dir_anterior + tamaño_registro - 8;
-                                                dbw.Write(dataFile.Length - tamaño_registro);
-
-                                                dataFile.Position = dataFile.Length - 8;
-                                                dbw.Write(apunta);
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                //dataFile.Position = apunta;
-                                                //aux_dir_anterior = dbr.ReadInt64();
-                                                aux_dir_anterior = apunta;
-                                            }
-                                        }
-
-
-                                        //} while (apunta != (long)-1);
-                                    } while (true);
-                                }
-                            }
-
-                            dataFile.Close();
-                            indexFile.Close();
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 2048;
+                            isdw.Write((long)0);
                         }
-
-
                     }
                 }
-                else
+                dbw.Write((long)-1);
+                dataFile.Close();
+                if (contIndices == 1)
                 {
-
+                    indexFile.Close();
+                }
+                if (contIndicesSecundario == 1)
+                {
+                    indexSecundarioFile.Close();
                 }
             }
             else
             {
-                if (cve_busqueda == 1) //Caso en donde solo tiene clave de busqueda
+                string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+                try
                 {
-                    int num_atributo_ordenar = 0;
-                    int ordenar_por = 0;
-                    string nombre_ordenado = "";
-                    for (int i = 0; i < listAtributos.Count; i++)
+                    dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+
+                }
+                catch (Exception)
+                {
+                    dataFile.Close();
+                    dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                }
+                BinaryWriter binaryWriter = new BinaryWriter(file);
+                BinaryReader binaryReader = new BinaryReader(file);
+                BinaryReader dbr = new BinaryReader(dataFile);
+                BinaryWriter dbw = new BinaryWriter(dataFile);
+
+                if (contArbolPrimario == 1)
+                {
+                    if (!CondicionesIndPrimarioArbol(atributoArbolPrimario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value)))
                     {
-                        if (listAtributos[i].tipoId == 1)
+                        return;
+                    }
+                    AccionesArbolPrimario(atributoArbolPrimario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value), dataFile.Length);
+                }
+
+                if (contIndices == 1)
+                {
+                    string nomArchivoIndex = idAtributo + ".idx";
+                    indexFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    idw = new BinaryWriter(indexFile);
+                    idr = new BinaryReader(indexFile);
+
+
+                    for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                    {
+                        if (listAtributos[i].tipoId == 2)
                         {
                             if (listAtributos[i].tipo == 'E')
                             {
-                                ordenar_por = 0;
+                                tipo_registro = 0;
+                                tam_registro += 4;
                             }
                             else if (listAtributos[i].tipo == 'C')
                             {
-                                ordenar_por = 1;
+                                tipo_registro = 1;
+                                tam_registro += listAtributos[i].longitud;
                             }
-                            nombre_ordenado = listAtributos[i].nombre;
-                            num_atributo_ordenar = i;
                         }
                     }
 
-                    if (listEntidades[clave_entidad].dir_data == -1) //Caso en donde es el primer registro en clave de busqueda 
+                    if (contArbolPrimario == 1)
                     {
-                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
-                        dataFile = new FileStream(nombre_archivo, FileMode.Create);
-                        dataFile.Close();
-                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
-                        BinaryWriter binaryWriter = new BinaryWriter(file);
-                        BinaryWriter dbw = new BinaryWriter(dataFile);
-                        file.Position = listEntidades[clave_entidad].direccion + 56;
-                        binaryWriter.Write((long)0);
+                        if (!CondicionesIndPrimarioArbol(atributoArbolPrimario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value)))
+                        {
+                            return;
+                        }
+                        AccionesArbolPrimario(atributoArbolPrimario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value), dataFile.Length);
+                    }
 
-                        dataFile.Position = 0;
-                        dbw.Write((long)0);
-                        for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                    indexFile.Position = 0;
+                    while (dir != -1)
+                    {
+                        if (tipo_registro == 0)
+                        {
+                            int nuevo_int = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_indice].Value);
+                            int datoInt = idr.ReadInt32();
+                            dir = idr.ReadInt64();
+                            if (datoInt == nuevo_int)
+                            {
+                                existe = true;
+                                MessageBox.Show("No puedes utilizar 2 veces el mismo indice");
+                            }
+                        }
+                        else
+                        {
+                            string nuevo_string = tablaInsertarRegistro.SelectedCells[num_indice].Value.ToString();
+                            string datoString = idr.ReadString();
+                            dir = idr.ReadInt64();
+                            if (datoString == nuevo_string)
+                            {
+                                existe = true;
+                                MessageBox.Show("No puedes utilizar 2 veces el mismo indice");
+                            }
+                        }
+                    }
+                }
+
+                if (contIndicesSecundario == 1)
+                {
+                    bool existe_secundario = false;
+                    string nomArchivoIndex = idAtributoSecundario + ".idx";
+                    try
+                    {
+                        indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    }
+                    catch (Exception)
+                    {
+                        indexSecundarioFile.Close();
+                        indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    }
+
+                    isdw = new BinaryWriter(indexSecundarioFile);
+                    isdr = new BinaryReader(indexSecundarioFile);
+
+
+                    for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                    {
+                        if (listAtributos[i].tipoId == 3)
                         {
                             if (listAtributos[i].tipo == 'E')
                             {
-                                int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value);
-                                dbw.Write(dataInsertar);
+                                tipo_registro_secundario = 0;
+                                tam_registro_secundario += 4;
                             }
                             else if (listAtributos[i].tipo == 'C')
                             {
-                                string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
-                                dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
-                                dbw.Write(dataInsertar);
+                                tipo_registro_secundario = 1;
+                                tam_registro_secundario += listAtributos[i].longitud;
                             }
                         }
-                        dbw.Write((long)-1);
-                        dataFile.Close();
                     }
-                    else //Caso donde se tiene que ordenar el registro en clave de busqueda
+
+                    indexSecundarioFile.Position = 0;
+                    if (tipo_registro_secundario == 0)
                     {
-                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
-                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
-                        BinaryWriter binaryWriter = new BinaryWriter(file);
-                        BinaryReader binaryReader = new BinaryReader(file);
-                        BinaryReader dbr = new BinaryReader(dataFile);
-                        BinaryWriter dbw = new BinaryWriter(dataFile);
+                        int nuevo_int = Int32.Parse(tablaInsertarRegistro.SelectedCells[num_indice_secundario].Value.ToString());
+                        long dir_existe_guardar = 0;
+                        long dir_actual_archivo = 0;
+                        do
+                        {
 
-                        /*dataFile.Position = dataFile.Length - 8;
-                        dbw.Write(dataFile.Length);*/
+                            int actual_int = 0;
 
-                        dataFile.Position = dataFile.Length;
+                            try
+                            {
+                                actual_int = isdr.ReadInt32();
+                                dir_actual_archivo = isdr.ReadInt64();
+                            }
+                            catch (Exception)
+                            {
+                                break;
+                            }
+
+                            if (actual_int == nuevo_int && dir_actual_archivo != -1)
+                            {
+                                existe_secundario = true;
+                                dir_existe_guardar = dir_actual_archivo;
+                                break;
+                            }
+
+                        } while (dir_actual_archivo != (long)-1);
+
+
+
+                        if (existe_secundario)
+                        {
+                            indexSecundarioFile.Position = dir_existe_guardar;
+                            do
+                            {
+                                long actual = isdr.ReadInt64();
+                                if (actual == -1)
+                                {
+                                    indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
+                                    isdw.Write(dataFile.Length);
+                                    break;
+                                }
+                            } while (true);
+                        }
+                        else
+                        {
+                            dir_actual_archivo = 0;
+                            long guarda_ultimo_bloque = 0;
+                            indexSecundarioFile.Position = 0;
+                            long dir_escribir = 0;
+                            do
+                            {
+                                int actual_archivo = isdr.ReadInt32();
+                                dir_actual_archivo = isdr.ReadInt64();
+
+                                if (dir_actual_archivo != -1)
+                                {
+                                    guarda_ultimo_bloque = dir_actual_archivo;
+                                }
+
+                                if (dir_actual_archivo == -1)
+                                {
+                                    indexSecundarioFile.Position = dir_escribir;
+                                    isdw.Write(nuevo_int);
+                                    long nuevo_bloque = guarda_ultimo_bloque + 2048;
+                                    isdw.Write(nuevo_bloque);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    int bloquesPequeños = 2040 / 8;
+                                    for (int j = 0; j < bloquesPequeños; j++)
+                                    {
+                                        isdw.Write((long)-1);
+                                    }
+                                    isdw.Write((long)-1);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    isdw.Write(dataFile.Length);
+                                }
+                                dir_escribir = indexSecundarioFile.Position;
+                            } while (dir_actual_archivo != (long)-1);
+                        }
+                    }
+                    else
+                    {
+                        string nuevo_string = tablaInsertarRegistro.SelectedCells[num_indice_secundario].Value.ToString();
+                        nuevo_string = nuevo_string.PadRight(listAtributos[num_indice_secundario].longitud - 1);
+                        long dir_existe_guardar = 0;
+                        long dir_actual_archivo = 0;
+                        do
+                        {
+
+                            string actual_archivo = "";
+
+                            try
+                            {
+                                actual_archivo = isdr.ReadString();
+                                dir_actual_archivo = isdr.ReadInt64();
+                            }
+                            catch (Exception)
+                            {
+                                break;
+                            }
+
+                            if (actual_archivo.Contains(nuevo_string) && dir_actual_archivo != -1)
+                            {
+                                existe_secundario = true;
+                                dir_existe_guardar = dir_actual_archivo;
+                                break;
+                            }
+
+                        } while (dir_actual_archivo != (long)-1);
+
+
+
+                        if (existe_secundario)
+                        {
+                            indexSecundarioFile.Position = dir_existe_guardar;
+                            do
+                            {
+                                long actual = isdr.ReadInt64();
+                                if (actual == -1)
+                                {
+                                    indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
+                                    isdw.Write(dataFile.Length);
+                                    break;
+                                }
+                            } while (true);
+                        }
+                        else
+                        {
+                            dir_actual_archivo = 0;
+                            long guarda_ultimo_bloque = 0;
+                            indexSecundarioFile.Position = 0;
+                            long dir_escribir = 0;
+                            do
+                            {
+                                string actual_archivo = isdr.ReadString();
+                                dir_actual_archivo = isdr.ReadInt64();
+
+                                if (dir_actual_archivo != -1)
+                                {
+                                    guarda_ultimo_bloque = dir_actual_archivo;
+                                }
+
+                                if (dir_actual_archivo == -1)
+                                {
+                                    indexSecundarioFile.Position = dir_escribir;
+                                    isdw.Write(nuevo_string);
+                                    long nuevo_bloque = guarda_ultimo_bloque + 2048;
+                                    isdw.Write(nuevo_bloque);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    int bloquesPequeños = 2040 / 8;
+                                    for (int j = 0; j < bloquesPequeños; j++)
+                                    {
+                                        isdw.Write((long)-1);
+                                    }
+                                    isdw.Write((long)-1);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    MessageBox.Show(dataFile.Length.ToString());
+                                    isdw.Write(dataFile.Length);
+                                }
+                                dir_escribir = indexSecundarioFile.Position;
+                            } while (dir_actual_archivo != (long)-1);
+                        }
+
+                    }
+
+                }
+
+                if (cve_busqueda != 1)
+                {
+                    dataFile.Position = dataFile.Length - 8;
+                    long dir_final = dbr.ReadInt64();
+                    if (dir_final == -1)
+                    {
+                        dataFile.Position = dataFile.Length - 8;
                         dbw.Write(dataFile.Length);
-                        for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                    }
+                    else
+                    {
+                        long dir_guardar = 0;
+                        do
                         {
-                            if (listAtributos[i].tipo == 'E')
+                            dir_guardar = dir_final + tam_registro - 8;
+                            dataFile.Position = dir_guardar;
+                            dir_final = dbr.ReadInt64();
+
+                        } while (dir_final == -1);
+                        dataFile.Position = dir_guardar;
+                        dbw.Write(dataFile.Length);
+                    }
+
+                }
+
+
+                if (!existe)
+                {
+                    if (contIndices == 1)
+                    {
+                        while (true)
+                        {
+                            if (tipo_registro == 0)
                             {
-                                int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value);
-                                dbw.Write(dataInsertar);
+                                int nuevo_int = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_indice].Value);
+                                indexFile.Position = indexFile.Position - 8 - 4;
+                                idw.Write(nuevo_int);
+                                idw.Write(dataFile.Length);
+                                break;
                             }
-                            else if (listAtributos[i].tipo == 'C')
+                            else
                             {
-                                string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
-                                dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
-                                dbw.Write(dataInsertar);
+                                string nuevo_string = tablaInsertarRegistro.SelectedCells[num_indice].Value.ToString();
+                                indexFile.Position = indexFile.Position - 8 - tam_registro;
+                                nuevo_string = nuevo_string.PadRight(tam_registro - 1);
+                                idw.Write(nuevo_string);
+                                idw.Write(dataFile.Length);
+                                break;
                             }
                         }
-                        dbw.Write((long)-1);
+                    }
+
+                    dataFile.Position = dataFile.Length;
+                    dbw.Write(dataFile.Length);
+                    for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+                    {
+                        if (listAtributos[i].tipo == 'E')
+                        {
+                            int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value);
+                            dbw.Write(dataInsertar);
+                        }
+                        else if (listAtributos[i].tipo == 'C')
+                        {
+                            string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
+                            dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
+                            dbw.Write(dataInsertar);
+                        }
+                    }
+                    dbw.Write((long)-1);
+                    //dataFile.Close();
+
+                    if (cve_busqueda == 1)
+                    {
+                        for (int i = 0; i < listAtributos.Count; i++)
+                        {
+                            if (listAtributos[i].tipoId == 1)
+                            {
+                                if (listAtributos[i].tipo == 'E')
+                                {
+                                    ordenar_por = 0;
+                                }
+                                else if (listAtributos[i].tipo == 'C')
+                                {
+                                    ordenar_por = 1;
+                                }
+                                nombre_ordenado = listAtributos[i].nombre;
+                                num_atributo_ordenar = i;
+                            }
+                        }
 
                         if (ordenar_por == 0) //Ordenar por enteros 
                         {
@@ -1219,7 +1436,7 @@ namespace EstructurasArchivos
                             {
                                 MessageBox.Show("Entro uno nuevo a ordenar por encima");
                                 file.Position = listEntidades[clave_entidad].direccion + 56;
-                                binaryWriter.Write(dataFile.Length-tamaño_registro);
+                                binaryWriter.Write(dataFile.Length - tamaño_registro);
                                 dataFile.Position = dataFile.Length - 8;
                                 dbw.Write(aux_dir_anterior);
                             }
@@ -1255,14 +1472,9 @@ namespace EstructurasArchivos
                                         }
                                         else
                                         {
-                                            //dataFile.Position = apunta;
-                                            //aux_dir_anterior = dbr.ReadInt64();
                                             aux_dir_anterior = apunta;
                                         }
                                     }
-
-
-                                    //} while (apunta != (long)-1);
                                 } while (true);
                             }
 
@@ -1324,92 +1536,755 @@ namespace EstructurasArchivos
                                         }
                                         else
                                         {
-                                            //dataFile.Position = apunta;
-                                            //aux_dir_anterior = dbr.ReadInt64();
                                             aux_dir_anterior = apunta;
                                         }
                                     }
-
-
-                                    //} while (apunta != (long)-1);
                                 } while (true);
                             }
                         }
-
-                        dataFile.Close();
                     }
-                }
-                else // Caso en que no tiene ningun tipo de indice 
-                {
-                    if (listEntidades[clave_entidad].dir_data == -1)//Caso insertar primer registro sin claves 
-                    {
-                        MessageBox.Show("Si es igual a -1");
-                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
-                        dataFile = new FileStream(nombre_archivo, FileMode.Create);
-                        dataFile.Close();
-                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
-                        BinaryWriter binaryWriter = new BinaryWriter(file);
-                        BinaryWriter dbw = new BinaryWriter(dataFile);
-                        file.Position = listEntidades[clave_entidad].direccion + 56;
-                        binaryWriter.Write((long)0);
 
-                        dataFile.Position = 0;
-                        dbw.Write((long)0);
-                        for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
-                        {
-                            if (listAtributos[i].tipo == 'E')
-                            {
-                                int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value); 
-                                dbw.Write(dataInsertar);
-                            }
-                            else if (listAtributos[i].tipo == 'C')
-                            {
-                                string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
-                                dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
-                                dbw.Write(dataInsertar);
-                            }
-                        }
-                        dbw.Write((long)-1);
-                        dataFile.Close();
-                        
+                    
+
+
+                    dataFile.Close();
+                    if (contIndices == 1)
+                    {
+                        indexFile.Close();
                     }
-                    else
+                    if (contIndicesSecundario == 1)
                     {
-                        string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
-                        dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
-                        BinaryWriter dbw = new BinaryWriter(dataFile);
-                        dataFile.Position = dataFile.Length - 8;
-                        dbw.Write(dataFile.Length);
-                        dataFile.Position = dataFile.Length;
-                        dbw.Write(dataFile.Length);
-                        for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
-                        {
-                            if (listAtributos[i].tipo == 'E')
-                            {
-                                int dataInsertar = Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value);
-                                dbw.Write(dataInsertar);
-                            }
-                            else if (listAtributos[i].tipo == 'C')
-                            {
-                                string dataInsertar = (string)tablaInsertarRegistro.SelectedCells[i].Value;
-                                dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
-                                dbw.Write(dataInsertar);
-                            }
-                        }
-                        dbw.Write((long)-1);
-                        dataFile.Close();
-
+                        indexSecundarioFile.Close();
                     }
                 }
             }
             guardarDatos();
             entidadInsertarEntidad.SelectedItem = null;
+        }
 
-            /*for (int i = 0; i < tablaInsertarRegistro.SelectedCells.Count; i++)
+        public void actualizaRegistro()
+        {
+            MessageBox.Show("Insertado");
+            int num_atributo_ordenar = 0;
+            int num_indice = 0;
+            int num_indice_secundario = 0;
+            int ordenar_por = 0;
+            string idAtributo = "";
+            string idAtributoSecundario = "";
+            string nombre_ordenado = "";
+            int contIndices = 0;
+            int contIndicesSecundario = 0;
+            int cve_busqueda = 0;
+            int tam_registro = 0;
+            int tam_registro_secundario = 0;
+            int tipo_registro = 0;
+            int tipo_registro_secundario = 0;
+            bool existe = false;
+            long dir = 0;
+            int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+            guardarAtributos(entidadInsertarEntidad.Text);
+
+            BinaryWriter idw = null;
+            BinaryReader idr = null;
+
+            BinaryWriter isdw = null;
+            BinaryReader isdr = null;
+
+
+            for (int i = 0; i < listAtributos.Count; i++)
             {
-                var a = tablaInsertarRegistro.SelectedCells[i].Value;
-            }*/
+                if (listAtributos[i].tipoId == 1)
+                {
+                    if (listAtributos[i].tipo == 'E')
+                    {
+                        ordenar_por = 0;
+                    }
+                    else if (listAtributos[i].tipo == 'C')
+                    {
+                        ordenar_por = 1;
+                    }
+                    num_atributo_ordenar = i;
+                    cve_busqueda++;
+                }
+                else if (listAtributos[i].tipoId == 2)
+                {
+                    idAtributo = listAtributos[i].id;
+                    num_indice = i;
+                    contIndices++;
+                }
+                else if (listAtributos[i].tipoId == 3)
+                {
+                    idAtributoSecundario = listAtributos[i].id;
+                    num_indice_secundario = i;
+                    contIndicesSecundario++;
+                }
+            }
 
+
+            if (listEntidades[clave_entidad].dir_data == -1)//Caso insertar primer registro sin claves 
+            {
+                string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+                try
+                {
+                    dataFile = new FileStream(nombre_archivo, FileMode.Create);
+                }
+                catch (Exception)
+                {
+
+                    dataFile.Close();
+                    dataFile = new FileStream(nombre_archivo, FileMode.Create);
+
+                }
+
+                dataFile.Close();
+                dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+
+                if (contIndices == 1)
+                {
+                    string nomArchivoIndex = idAtributo + ".idx";
+                    indexFile = new FileStream(nomArchivoIndex, FileMode.Create);
+                    indexFile.Close();
+                    indexFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    idw = new BinaryWriter(indexFile);
+                    idr = new BinaryReader(indexFile);
+                }
+
+                if (contIndicesSecundario == 1)
+                {
+                    //CAMBIOS QUE NO CHEQUE SI FUNCIONAN
+                    string nomArchivoIndex = idAtributoSecundario + ".idx";
+                    try
+                    {
+                        indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Create);
+                    }
+                    catch (Exception)
+                    {
+
+
+                    }
+                    indexSecundarioFile.Close();
+                    indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    isdw = new BinaryWriter(indexSecundarioFile);
+                    isdr = new BinaryReader(indexSecundarioFile);
+                }
+
+
+                BinaryWriter binaryWriter = new BinaryWriter(file);
+                BinaryWriter dbw = new BinaryWriter(dataFile);
+
+                BinaryReader binaryReader = new BinaryReader(file);
+                BinaryReader dbr = new BinaryReader(dataFile);
+
+                file.Position = listEntidades[clave_entidad].direccion + 56;
+                binaryWriter.Write((long)0);
+
+                dataFile.Position = 0;
+                dbw.Write((long)0);
+
+
+                for (int i = 0; i < editaRegistro.SelectedCells.Count; i++)
+                {
+                    if (listAtributos[i].tipo == 'E')
+                    {
+                        int dataInsertar = Convert.ToInt32(editaRegistro.SelectedCells[i].Value);
+                        dbw.Write(dataInsertar);
+                        if (contIndices == 1 && listAtributos[i].tipoId == 2)
+                        {
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / 12;
+                            for (int j = 0; j < registrosIndice; j++)
+                            {
+                                idw.Write((int)0);
+                                idw.Write((long)-1);
+                            }
+                            idw.Write((long)-1);
+                            indexFile.Position = 0;
+                            idw.Write(dataInsertar);
+                            idw.Write((long)0);
+                        }
+
+                        if (contIndicesSecundario == 1 && listAtributos[i].tipoId == 3)
+                        {
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / 12;
+                            for (int j = 0; j < registrosIndice; j++)
+                            {
+                                isdw.Write((int)0);
+                                isdw.Write((long)-1);
+                            }
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 0;
+                            isdw.Write(dataInsertar);
+                            isdw.Write((long)2048);
+                            int bloquesPequeños = 2040 / 8;
+                            indexSecundarioFile.Position = 2048;
+                            for (int j = 0; j < bloquesPequeños; j++)
+                            {
+                                isdw.Write((long)-1);
+                            }
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 2048;
+                            isdw.Write((long)0);
+                        }
+                    }
+                    else if (listAtributos[i].tipo == 'C')
+                    {
+                        string dataInsertar = (string)editaRegistro.SelectedCells[i].Value;
+                        dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
+                        dbw.Write(dataInsertar);
+                        if (contIndices == 1 && listAtributos[i].tipoId == 2)
+                        {
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / listAtributos[i].longitud;
+                            for (int j = 0; j < registrosIndice; j++)
+                            {
+                                idw.Write(dataInsertar);
+                                idw.Write((long)-1);
+                            }
+                            idw.Write((long)-1);
+
+                            indexFile.Position = 0;
+                            idw.Write(dataInsertar);
+                            idw.Write((long)0);
+                        }
+
+                        if (contIndicesSecundario == 1 && listAtributos[i].tipoId == 3)
+                        {
+                            file.Position = listAtributos[i].direccion + 57;
+                            binaryWriter.Write((long)0);
+                            int registrosIndice = 2040 / listAtributos[i].longitud;
+                            for (int j = 0; j < registrosIndice; j++)
+                            {
+                                isdw.Write(dataInsertar);
+                                isdw.Write((long)-1);
+                            }
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 0;
+                            isdw.Write(dataInsertar);
+                            isdw.Write((long)2048);
+                            int bloquesPequeños = 2040 / 8;
+                            indexSecundarioFile.Position = 2048;
+                            for (int j = 0; j < bloquesPequeños; j++)
+                            {
+                                isdw.Write((long)-1);
+                            }
+                            isdw.Write((long)-1);
+                            indexSecundarioFile.Position = 2048;
+                            isdw.Write((long)0);
+                        }
+                    }
+                }
+                dbw.Write((long)-1);
+                dataFile.Close();
+                if (contIndices == 1)
+                {
+                    indexFile.Close();
+                }
+                if (contIndicesSecundario == 1)
+                {
+                    indexSecundarioFile.Close();
+                }
+            }
+            else
+            {
+                string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+                dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                BinaryWriter binaryWriter = new BinaryWriter(file);
+                BinaryReader binaryReader = new BinaryReader(file);
+                BinaryReader dbr = new BinaryReader(dataFile);
+                BinaryWriter dbw = new BinaryWriter(dataFile);
+
+                if (contIndices == 1)
+                {
+                    string nomArchivoIndex = idAtributo + ".idx";
+                    indexFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    idw = new BinaryWriter(indexFile);
+                    idr = new BinaryReader(indexFile);
+
+
+                    for (int i = 0; i < editaRegistro.SelectedCells.Count; i++)
+                    {
+                        if (listAtributos[i].tipoId == 2)
+                        {
+                            if (listAtributos[i].tipo == 'E')
+                            {
+                                tipo_registro = 0;
+                                tam_registro += 4;
+                            }
+                            else if (listAtributos[i].tipo == 'C')
+                            {
+                                tipo_registro = 1;
+                                tam_registro += listAtributos[i].longitud;
+                            }
+                        }
+                    }
+
+                    indexFile.Position = 0;
+                    while (dir != -1)
+                    {
+                        if (tipo_registro == 0)
+                        {
+                            int nuevo_int = Convert.ToInt32(editaRegistro.SelectedCells[num_indice].Value);
+                            int datoInt = idr.ReadInt32();
+                            dir = idr.ReadInt64();
+                            if (datoInt == nuevo_int)
+                            {
+                                existe = true;
+                                MessageBox.Show("No puedes utilizar 2 veces el mismo indice");
+                            }
+                        }
+                        else
+                        {
+                            string nuevo_string = editaRegistro.SelectedCells[num_indice].Value.ToString();
+                            string datoString = idr.ReadString();
+                            dir = idr.ReadInt64();
+                            if (datoString == nuevo_string)
+                            {
+                                existe = true;
+                                MessageBox.Show("No puedes utilizar 2 veces el mismo indice");
+                            }
+                        }
+                    }
+                }
+
+                if (contIndicesSecundario == 1)
+                {
+                    bool existe_secundario = false;
+                    string nomArchivoIndex = idAtributoSecundario + ".idx";
+                    try
+                    {
+                        indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    }
+                    catch (Exception)
+                    {
+                        indexSecundarioFile.Close();
+                        indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
+                    }
+
+                    isdw = new BinaryWriter(indexSecundarioFile);
+                    isdr = new BinaryReader(indexSecundarioFile);
+
+
+                    for (int i = 0; i < editaRegistro.SelectedCells.Count; i++)
+                    {
+                        if (listAtributos[i].tipoId == 3)
+                        {
+                            if (listAtributos[i].tipo == 'E')
+                            {
+                                tipo_registro_secundario = 0;
+                                tam_registro_secundario += 4;
+                            }
+                            else if (listAtributos[i].tipo == 'C')
+                            {
+                                tipo_registro_secundario = 1;
+                                tam_registro_secundario += listAtributos[i].longitud;
+                            }
+                        }
+                    }
+
+                    indexSecundarioFile.Position = 0;
+                    if (tipo_registro_secundario == 0)
+                    {
+                        int nuevo_int = Int32.Parse(editaRegistro.SelectedCells[num_indice_secundario].Value.ToString());
+                        long dir_existe_guardar = 0;
+                        long dir_actual_archivo = 0;
+                        do
+                        {
+
+                            int actual_int = 0;
+
+                            try
+                            {
+                                actual_int = isdr.ReadInt32();
+                                dir_actual_archivo = isdr.ReadInt64();
+                            }
+                            catch (Exception)
+                            {
+                                break;
+                            }
+
+                            if (actual_int == nuevo_int && dir_actual_archivo != -1)
+                            {
+                                existe_secundario = true;
+                                dir_existe_guardar = dir_actual_archivo;
+                                break;
+                            }
+
+                        } while (dir_actual_archivo != (long)-1);
+
+
+
+                        if (existe_secundario)
+                        {
+                            indexSecundarioFile.Position = dir_existe_guardar;
+                            do
+                            {
+                                long actual = isdr.ReadInt64();
+                                if (actual == -1)
+                                {
+                                    indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
+                                    isdw.Write(dataFile.Length);
+                                    break;
+                                }
+                            } while (true);
+                        }
+                        else
+                        {
+                            dir_actual_archivo = 0;
+                            long guarda_ultimo_bloque = 0;
+                            indexSecundarioFile.Position = 0;
+                            long dir_escribir = 0;
+                            do
+                            {
+                                int actual_archivo = isdr.ReadInt32();
+                                dir_actual_archivo = isdr.ReadInt64();
+
+                                if (dir_actual_archivo != -1)
+                                {
+                                    guarda_ultimo_bloque = dir_actual_archivo;
+                                }
+
+                                if (dir_actual_archivo == -1)
+                                {
+                                    indexSecundarioFile.Position = dir_escribir;
+                                    isdw.Write(nuevo_int);
+                                    long nuevo_bloque = guarda_ultimo_bloque + 2048;
+                                    isdw.Write(nuevo_bloque);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    int bloquesPequeños = 2040 / 8;
+                                    for (int j = 0; j < bloquesPequeños; j++)
+                                    {
+                                        isdw.Write((long)-1);
+                                    }
+                                    isdw.Write((long)-1);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    isdw.Write(dataFile.Length);
+                                }
+                                dir_escribir = indexSecundarioFile.Position;
+                            } while (dir_actual_archivo != (long)-1);
+                        }
+                    }
+                    else
+                    {
+                        string nuevo_string = editaRegistro.SelectedCells[num_indice_secundario].Value.ToString();
+                        nuevo_string = nuevo_string.PadRight(listAtributos[num_indice_secundario].longitud - 1);
+                        long dir_existe_guardar = 0;
+                        long dir_actual_archivo = 0;
+                        do
+                        {
+
+                            string actual_archivo = "";
+
+                            try
+                            {
+                                actual_archivo = isdr.ReadString();
+                                dir_actual_archivo = isdr.ReadInt64();
+                            }
+                            catch (Exception)
+                            {
+                                break;
+                            }
+
+                            if (actual_archivo.Contains(nuevo_string) && dir_actual_archivo != -1)
+                            {
+                                existe_secundario = true;
+                                dir_existe_guardar = dir_actual_archivo;
+                                break;
+                            }
+
+                        } while (dir_actual_archivo != (long)-1);
+
+
+
+                        if (existe_secundario)
+                        {
+                            indexSecundarioFile.Position = dir_existe_guardar;
+                            do
+                            {
+                                long actual = isdr.ReadInt64();
+                                if (actual == -1)
+                                {
+                                    indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
+                                    isdw.Write(dataFile.Length);
+                                    break;
+                                }
+                            } while (true);
+                        }
+                        else
+                        {
+                            dir_actual_archivo = 0;
+                            long guarda_ultimo_bloque = 0;
+                            indexSecundarioFile.Position = 0;
+                            long dir_escribir = 0;
+                            do
+                            {
+                                string actual_archivo = isdr.ReadString();
+                                dir_actual_archivo = isdr.ReadInt64();
+
+                                if (dir_actual_archivo != -1)
+                                {
+                                    guarda_ultimo_bloque = dir_actual_archivo;
+                                }
+
+                                if (dir_actual_archivo == -1)
+                                {
+                                    indexSecundarioFile.Position = dir_escribir;
+                                    isdw.Write(nuevo_string);
+                                    long nuevo_bloque = guarda_ultimo_bloque + 2048;
+                                    isdw.Write(nuevo_bloque);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    int bloquesPequeños = 2040 / 8;
+                                    for (int j = 0; j < bloquesPequeños; j++)
+                                    {
+                                        isdw.Write((long)-1);
+                                    }
+                                    isdw.Write((long)-1);
+                                    indexSecundarioFile.Position = nuevo_bloque;
+                                    MessageBox.Show(dataFile.Length.ToString());
+                                    isdw.Write(dataFile.Length);
+                                }
+                                dir_escribir = indexSecundarioFile.Position;
+                            } while (dir_actual_archivo != (long)-1);
+                        }
+
+                    }
+
+                }
+
+                if (cve_busqueda != 1)
+                {
+                    dataFile.Position = dataFile.Length - 8;
+                    long dir_final = dbr.ReadInt64();
+                    if (dir_final == -1)
+                    {
+                        dataFile.Position = dataFile.Length - 8;
+                        dbw.Write(dataFile.Length);
+                    }
+                    else
+                    {
+                        long dir_guardar = 0;
+                        do
+                        {
+                            dir_guardar = dir_final + tam_registro - 8;
+                            dataFile.Position = dir_guardar;
+                            dir_final = dbr.ReadInt64();
+
+                        } while (dir_final == -1);
+                        dataFile.Position = dir_guardar;
+                        dbw.Write(dataFile.Length);
+                    }
+
+                }
+
+
+                if (!existe)
+                {
+                    if (contIndices == 1)
+                    {
+                        while (true)
+                        {
+                            if (tipo_registro == 0)
+                            {
+                                int nuevo_int = Convert.ToInt32(editaRegistro.SelectedCells[num_indice].Value);
+                                indexFile.Position = indexFile.Position - 8 - 4;
+                                idw.Write(nuevo_int);
+                                idw.Write(dataFile.Length);
+                                break;
+                            }
+                            else
+                            {
+                                string nuevo_string = editaRegistro.SelectedCells[num_indice].Value.ToString();
+                                indexFile.Position = indexFile.Position - 8 - tam_registro;
+                                nuevo_string = nuevo_string.PadRight(tam_registro - 1);
+                                idw.Write(nuevo_string);
+                                idw.Write(dataFile.Length);
+                                break;
+                            }
+                        }
+                    }
+
+                    dataFile.Position = dataFile.Length;
+                    dbw.Write(dataFile.Length);
+                    for (int i = 0; i < editaRegistro.SelectedCells.Count; i++)
+                    {
+                        if (listAtributos[i].tipo == 'E')
+                        {
+                            int dataInsertar = Convert.ToInt32(editaRegistro.SelectedCells[i].Value);
+                            dbw.Write(dataInsertar);
+                        }
+                        else if (listAtributos[i].tipo == 'C')
+                        {
+                            string dataInsertar = (string)editaRegistro.SelectedCells[i].Value;
+                            dataInsertar = dataInsertar.PadRight(listAtributos[i].longitud - 1);
+                            dbw.Write(dataInsertar);
+                        }
+                    }
+                    dbw.Write((long)-1);
+                    //dataFile.Close();
+
+                    if (cve_busqueda == 1)
+                    {
+                        for (int i = 0; i < listAtributos.Count; i++)
+                        {
+                            if (listAtributos[i].tipoId == 1)
+                            {
+                                if (listAtributos[i].tipo == 'E')
+                                {
+                                    ordenar_por = 0;
+                                }
+                                else if (listAtributos[i].tipo == 'C')
+                                {
+                                    ordenar_por = 1;
+                                }
+                                nombre_ordenado = listAtributos[i].nombre;
+                                num_atributo_ordenar = i;
+                            }
+                        }
+
+                        if (ordenar_por == 0) //Ordenar por enteros 
+                        {
+                            MessageBox.Show("Ordenado por enteros");
+                            int nuevo_int = Convert.ToInt32(editaRegistro.SelectedCells[num_atributo_ordenar].Value);
+                            file.Position = listEntidades[clave_entidad].direccion + 56;
+                            long cab = binaryReader.ReadInt64();
+                            long apunta;
+                            long aux_dir_anterior;
+
+                            aux_dir_anterior = cab;
+
+                            int tamaño_registro = CalculaTamRegistro;
+                            int buscar_en = PosicionDeLaBusqueda;
+                            dataFile.Position = aux_dir_anterior + buscar_en;
+                            int int_anterior = dbr.ReadInt32();
+
+
+                            if (nuevo_int < int_anterior)
+                            {
+                                MessageBox.Show("Entro uno nuevo a ordenar por encima");
+                                file.Position = listEntidades[clave_entidad].direccion + 56;
+                                binaryWriter.Write(dataFile.Length - tamaño_registro);
+                                dataFile.Position = dataFile.Length - 8;
+                                dbw.Write(aux_dir_anterior);
+                            }
+                            else
+                            {
+                                do
+                                {
+                                    dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
+                                    apunta = dbr.ReadInt64();
+
+                                    dataFile.Position = apunta + buscar_en;
+                                    int_anterior = dbr.ReadInt32();
+
+                                    if (apunta == (long)-1)
+                                    {
+                                        dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
+                                        dbw.Write(dataFile.Length - tamaño_registro);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        dataFile.Position = apunta + buscar_en;
+                                        int_anterior = dbr.ReadInt32();
+
+                                        if (nuevo_int < int_anterior)
+                                        {
+                                            dataFile.Position = aux_dir_anterior + tamaño_registro - 8;
+                                            dbw.Write(dataFile.Length - tamaño_registro);
+
+                                            dataFile.Position = dataFile.Length - 8;
+                                            dbw.Write(apunta);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            aux_dir_anterior = apunta;
+                                        }
+                                    }
+                                } while (true);
+                            }
+
+
+                        }
+                        else //Ordenar por cadenas
+                        {
+                            MessageBox.Show("Ordenado por Cadena");
+                            string nuevo_string = editaRegistro.SelectedCells[num_atributo_ordenar].Value.ToString();
+                            file.Position = listEntidades[clave_entidad].direccion + 56;
+                            long cab = binaryReader.ReadInt64();
+                            long apunta;
+                            long aux_dir_anterior;
+
+                            aux_dir_anterior = cab;
+
+                            int tamaño_registro = CalculaTamRegistro;
+                            int buscar_en = PosicionDeLaBusqueda;
+                            dataFile.Position = aux_dir_anterior + buscar_en;
+                            string string_anterior = dbr.ReadString();
+
+
+                            if (string.Compare(nuevo_string, string_anterior) == -1)
+                            {
+                                file.Position = listEntidades[clave_entidad].direccion + 56;
+                                binaryWriter.Write(dataFile.Length - tamaño_registro);
+                                dataFile.Position = dataFile.Length - 8;
+                                dbw.Write(aux_dir_anterior);
+                            }
+                            else
+                            {
+                                do
+                                {
+                                    dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
+                                    apunta = dbr.ReadInt64();
+
+                                    dataFile.Position = apunta + buscar_en;
+                                    string_anterior = dbr.ReadString();
+
+                                    if (apunta == (long)-1)
+                                    {
+                                        dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
+                                        dbw.Write(dataFile.Length - tamaño_registro);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        dataFile.Position = apunta + buscar_en;
+                                        string_anterior = dbr.ReadString();
+
+                                        if (string.Compare(nuevo_string, string_anterior) == -1)
+                                        {
+                                            dataFile.Position = aux_dir_anterior + tamaño_registro - 8;
+                                            dbw.Write(dataFile.Length - tamaño_registro);
+
+                                            dataFile.Position = dataFile.Length - 8;
+                                            dbw.Write(apunta);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            aux_dir_anterior = apunta;
+                                        }
+                                    }
+                                } while (true);
+                            }
+                        }
+                    }
+                    dataFile.Close();
+                    if (contIndices == 1)
+                    {
+                        indexFile.Close();
+                    }
+                    if (contIndicesSecundario == 1)
+                    {
+                        indexSecundarioFile.Close();
+                    }
+                }
+            }
+            guardarDatos();
+            entidadInsertarEntidad.SelectedItem = null;
         }
 
         private int CalculaTamRegistro
@@ -1428,7 +2303,7 @@ namespace EstructurasArchivos
                         cont += listAtributos[i].longitud;
                     }
                 }
-                
+
                 return cont;
             }
         }
@@ -1439,8 +2314,8 @@ namespace EstructurasArchivos
             {
                 int cont = 8;
                 for (int i = 0; i < listAtributos.Count; i++)
-                { 
-                    if (listAtributos[i].tipoId == 1 )
+                {
+                    if (listAtributos[i].tipoId == 1)
                     {
                         break;
                     }
@@ -1472,8 +2347,16 @@ namespace EstructurasArchivos
                 //file.Close();
                 int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
                 string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+                try
+                {
 
-                dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                    dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                }
+                catch (Exception)
+                {
+                    dataFile.Close();
+                    dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                }
 
                 BinaryReader br = new BinaryReader(dataFile);
 
@@ -1505,42 +2388,45 @@ namespace EstructurasArchivos
                 //int tama_registro = CalculaTamRegistro;
 
                 //int contAtributo=0;
-                dataFile.Position = direccion_anterior;
-                do
+                if (direccion_anterior != -1)
                 {
-                    int i=0;
-                    string[] data = new string[listAtributos.Count+2];
-
-                    
-                    data[i] = br.ReadInt64().ToString();
-                    for (i = 0; i < listAtributos.Count; i++)
+                    dataFile.Position = direccion_anterior;
+                    do
                     {
-                        if (listAtributos[i].tipo == 'E')
+                        int i = 0;
+                        string[] data = new string[listAtributos.Count + 2];
+
+
+                        data[i] = br.ReadInt64().ToString();
+                        for (i = 0; i < listAtributos.Count; i++)
                         {
-                            int dato_int = br.ReadInt32();
-                            data[i + 1] = dato_int.ToString();
+                            if (listAtributos[i].tipo == 'E')
+                            {
+                                int dato_int = br.ReadInt32();
+                                data[i + 1] = dato_int.ToString();
+                            }
+                            else
+                            {
+                                string dato_string = br.ReadString();
+                                data[i + 1] = dato_string;
+                            }
+
+
                         }
-                        else
+                        dir_siguiente = br.ReadInt64();
+
+                        data[i + 1] = dir_siguiente.ToString();
+                        tablaInsertarRegistro.Rows.Add(data);
+                        if (dir_siguiente == -1)
                         {
-                            string dato_string = br.ReadString();
-                            data[i + 1] = dato_string;
+                            break;
                         }
+                        dataFile.Position = dir_siguiente;
 
 
-                    }
-                    dir_siguiente = br.ReadInt64();
-
-                    data[i + 1] = dir_siguiente.ToString();
-                    tablaInsertarRegistro.Rows.Add(data);
-                    if (dir_siguiente==-1)
-                    {
-                        break;
-                    }
-                    dataFile.Position = dir_siguiente;
-
-
-                } while (dir_siguiente != -1);
-                dataFile.Close();
+                    } while (dir_siguiente != -1);
+                    dataFile.Close();
+                }
             }
         }
 
@@ -1564,5 +2450,1070 @@ namespace EstructurasArchivos
                 }
             }
         }
+
+        private void Elimina_registro_Click(object sender, EventArgs e)
+        {
+            eliminaRegistro();
+        }
+
+        public void eliminaRegistro()
+        {
+            Atributo atributo_primario = null;
+            string idArbolPrimarioEliminar = "";
+            string idArbolSecundarioEliminar = "";
+            int contArbolPrimario = 0;
+            int contArbolSecundario = 0;
+            bool primero = false;
+            string idAtributoEliminar = "";
+            string idAtributoSecundarioEliminar = "";
+            int contIndices = 0;
+            int contIndicesSecundario = 0;
+            long dir_borrar = long.Parse(tablaInsertarRegistro.SelectedCells[0].Value.ToString());
+            long dir_editar = -1;
+
+            BinaryReader binaryReader = new BinaryReader(file);
+            BinaryWriter binaryWeader = new BinaryWriter(file);
+
+            guardarAtributos(entidadInsertarEntidad.Text);
+
+            if (entidadInsertarEntidad.Text != "")
+            {
+                //file.Close();
+                int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+                string nombre_archivo = listEntidades[clave_entidad].id + ".dat";
+
+                try
+                {
+                    dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+
+                }
+                catch (Exception)
+                {
+
+                    dataFile.Close();
+                    dataFile = new FileStream(nombre_archivo, FileMode.Open, FileAccess.ReadWrite);
+                }
+
+                BinaryReader br = new BinaryReader(dataFile);
+                BinaryWriter bw = new BinaryWriter(dataFile);
+
+                file.Position = listEntidades[clave_entidad].direccion + 56;
+                long cab = binaryReader.ReadInt64();
+                long direccion_anterior = cab;
+
+
+                int id = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+                guardarAtributos(entidadInsertarEntidad.Text);
+
+                for (int i = 0; i < listAtributos.Count; i++)
+                {
+                    if (listAtributos[i].tipoId == 2)
+                    {
+                        idAtributoEliminar = listAtributos[i].
+                            id;
+                        contIndices++;
+                    }
+                    else if (listAtributos[i].tipoId == 3)
+                    {
+                        idAtributoSecundarioEliminar = listAtributos[i].id;
+                        contIndicesSecundario++;
+                    }
+                    else if (listAtributos[i].tipoId == 4)
+                    {
+                        atributo_primario = listAtributos[i];
+                        idArbolPrimarioEliminar = listAtributos[i].id;
+                        contArbolPrimario++;
+                    }
+                    else if (listAtributos[i].tipoId == 5)
+                    {
+                        idArbolSecundarioEliminar = listAtributos[i].id;
+                        contArbolSecundario++;
+                    }
+                }
+
+                long dir_siguiente;
+
+
+                if (direccion_anterior != -1)
+                {
+                    dataFile.Position = direccion_anterior;
+
+                    do
+                    {
+                        int i = 0;
+
+
+                        long actual = br.ReadInt64();
+                        for (i = 0; i < listAtributos.Count; i++)
+                        {
+                            if (listAtributos[i].tipo == 'E')
+                            {
+                                int dato_int = br.ReadInt32();
+                            }
+                            else
+                            {
+                                string dato_string = br.ReadString();
+                            }
+                        }
+
+
+                        dir_siguiente = br.ReadInt64();
+                        if (dir_editar != -1)
+                        {
+                            dataFile.Position = dir_editar;
+                            bw.Write((long)dir_siguiente);
+
+                            if (contIndices == 1)
+                            {
+                                indexFile = new FileStream(idAtributoEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader idr = new BinaryReader(indexFile);
+                                BinaryWriter idw = new BinaryWriter(indexFile);
+
+                                int actual_indice = 0;
+                                long direccion = 0;
+                                indexFile.Position = 0;
+
+                                while (direccion != -1)
+                                {
+                                    actual_indice = idr.ReadInt32();
+                                    direccion = idr.ReadInt64();
+                                    if (direccion == actual)
+                                    {
+                                        indexFile.Position = indexFile.Position - 8;
+                                        idw.Write((long)-2);
+                                    }
+                                }
+                                indexFile.Close();
+                            }
+
+                            if (contIndicesSecundario == 1)
+                            {
+                                indexSecundarioFile = new FileStream(idAtributoSecundarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader isdr = new BinaryReader(indexSecundarioFile);
+                                BinaryWriter isdw = new BinaryWriter(indexSecundarioFile);
+
+                                long direccion = 0;
+                                indexSecundarioFile.Position = 2048;
+
+                                while (true)
+                                {
+                                    direccion = isdr.ReadInt64();
+                                    if (direccion == actual)
+                                    {
+                                        indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
+                                        isdw.Write((long)-2);
+                                        break;
+                                    }
+                                }
+
+
+                                indexSecundarioFile.Close();
+                            }
+
+                            if (contArbolPrimario == 1)
+                            {
+                                archivoArbol = new FileStream(idArbolPrimarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader abr = new BinaryReader(archivoArbol);
+                                BinaryWriter abW = new BinaryWriter(archivoArbol);
+
+                                EliminaDeArbolPrimario(atributo_primario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value));
+
+
+
+
+                                archivoArbol.Close();
+                            }
+
+                            break;
+                        }
+
+                        if (dir_siguiente == dir_borrar)
+                        {
+                            dir_editar = dataFile.Position - 8;
+                        }
+
+
+                        if (cab == dir_borrar && !primero)
+                        {
+                            file.Position = listEntidades[clave_entidad].direccion + 56;
+                            binaryWeader.Write((long)dir_siguiente);
+
+                            //dataFile.Position = dir_editar;
+                            //bw.Write((long)dir_siguiente);
+
+                            if (contIndices == 1)
+                            {
+                                indexFile = new FileStream(idAtributoEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader idr = new BinaryReader(indexFile);
+                                BinaryWriter idw = new BinaryWriter(indexFile);
+
+                                int actual_indice = 0;
+                                long direccion = 0;
+                                indexFile.Position = 0;
+
+                                while (direccion != -1)
+                                {
+                                    actual_indice = idr.ReadInt32();
+                                    direccion = idr.ReadInt64();
+                                    if (direccion == actual)
+                                    {
+                                        indexFile.Position = indexFile.Position - 8;
+                                        idw.Write((long)-2);
+                                    }
+                                }
+
+
+                                indexFile.Close();
+                            }
+
+                            if (contArbolPrimario == 1)
+                            {
+                                archivoArbol = new FileStream(idArbolPrimarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader abr = new BinaryReader(archivoArbol);
+                                BinaryWriter abW = new BinaryWriter(archivoArbol);
+
+                                EliminaDeArbolPrimario(atributo_primario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value));
+
+                                archivoArbol.Close();
+                            }
+
+                            if (contIndicesSecundario == 1)
+                            {
+                                indexSecundarioFile = new FileStream(idAtributoSecundarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader isdr = new BinaryReader(indexSecundarioFile);
+                                BinaryWriter isdw = new BinaryWriter(indexSecundarioFile);
+
+                                long direccion = 0;
+                                indexSecundarioFile.Position = 2048;
+
+                                while (true)
+                                {
+                                    direccion = isdr.ReadInt64();
+                                    if (direccion == actual)
+                                    {
+                                        indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
+                                        isdw.Write((long)-2);
+                                        break;
+                                    }
+                                }
+                                indexSecundarioFile.Close();
+                            }
+
+                            primero = true;
+                            break;
+                        }
+
+                        if (dir_siguiente == -1)
+                        {
+                            break;
+                        }
+                        dataFile.Position = dir_siguiente;
+
+
+                    } while (dir_siguiente != -1);
+                    dataFile.Close();
+                }
+            }
+            guardarDatos();
+        }
+
+        private void EditarRegistro_Click(object sender, EventArgs e)
+        {
+            editaRegistro.Rows.Clear();
+            editaRegistro.Columns.Clear();
+            string[] data = new string[tablaInsertarRegistro.SelectedCells.Count - 2];
+            for (int i = 1; i < tablaInsertarRegistro.SelectedCells.Count - 1; i++)
+            {
+                editaRegistro.Columns.Add("...", "...");
+                data[i - 1] = tablaInsertarRegistro.SelectedCells[i].Value.ToString();
+            }
+            editaRegistro.Rows.Add(data);
+
+
+            guardarDatos();
+        }
+
+        private void TablaInsertarRegistro_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void MuestraIndiceSecundario_Click(object sender, EventArgs e)
+        {
+            if (entidadInsertarEntidad.Text != "")
+            {
+                string id_atributo;
+                int id = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+                guardarAtributos(entidadInsertarEntidad.Text);
+
+                for (int i = 0; i < listAtributos.Count; i++)
+                {
+                    if (listAtributos[i].tipoId == 3)
+                    {
+                        id_atributo = listAtributos[i].id;
+                        IndiceSecundario indiceSecundario = new IndiceSecundario(id_atributo, listAtributos[i].tipo);
+                        indiceSecundario.Show();
+                        break;
+                    }
+                }
+            }
+        }
+
+
+
+        private void EditRegisters_Click(object sender, EventArgs e)
+        {
+            eliminaRegistro();
+            actualizaRegistro();
+            guardarDatos();
+        }
+
+        private void EntidadInsertarEntidad_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        
+
+        private void Arbol_primario_Click(object sender, EventArgs e)
+        {
+            Atributo atributo = null;
+
+            int num_arbol_primario = 0;
+            string idAtributoArbolPrimario = "";
+            int contArbolPrimario = 0;
+            int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+
+            BinaryWriter iapdw = null;
+            BinaryReader iapdr = null;
+
+            guardarAtributos(entidadInsertarEntidad.Text);
+
+            for (int i = 0; i < listAtributos.Count; i++)
+            {
+                if (listAtributos[i].tipoId == 4)
+                {
+                    atributo = listAtributos[i];
+                }
+            }
+
+
+
+            List<NodoArbol> nodos = GetNodos(atributo);
+            MessageBox.Show(nodos.Count.ToString());
+            ArbolPrimario arbol = new ArbolPrimario(nodos);
+            arbol.Show();
+        }
+
+
+
+        private void Arbol_secundario_Click(object sender, EventArgs e)
+        {
+            Atributo atributo = null;
+
+            int num_arbol_primario = 0;
+            string idAtributoArbolPrimario = "";
+            int contArbolPrimario = 0;
+            int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
+
+            BinaryWriter iapdw = null;
+            BinaryReader iapdr = null;
+
+            guardarAtributos(entidadInsertarEntidad.Text);
+
+            for (int i = 0; i < listAtributos.Count; i++)
+            {
+                if (listAtributos[i].tipoId == 5)
+                {
+                    atributo = listAtributos[i];
+                }
+            }
+
+            List<NodoArbol> nodos = GetNodos(atributo);
+            ArbolSecundario arbol = new ArbolSecundario(nodos);
+            arbol.Show();
+
+        }
+
+        public void AbrirArchivoArbol(Atributo atributo)
+        {
+            string file_name = atributo.id + ".idx";
+            try
+            {
+                archivoArbol = new FileStream(file_name, FileMode.Open,FileAccess.ReadWrite);
+            }
+            catch (Exception)
+            {
+                archivoArbol.Close();
+                archivoArbol = new FileStream(file_name, FileMode.Open, FileAccess.ReadWrite);
+            }
+        }
+
+        public void CerrarArchivoArbol()
+        {
+            archivoArbol.Close();
+        }
+
+        public List<NodoArbol> GetNodos(Atributo atributo)
+        {
+            List<NodoArbol> nodos = new List<NodoArbol>();
+            long apuntador_archivo = atributo.dirDatos;
+
+            if (apuntador_archivo != -1)
+            {
+                AbrirArchivoArbol(atributo);
+                BinaryReader reader = new BinaryReader(archivoArbol);
+
+                reader.BaseStream.Position = apuntador_archivo;
+                NodoArbol nodo = new NodoArbol();
+                nodo.tipo = System.Convert.ToChar(reader.ReadByte());
+                nodo.direccion = reader.ReadInt64();
+                nodo.claves = new List<int>();
+                nodo.apuntadores = new List<long>();
+
+                for (int i = 0; i < NodoArbol.K_ARBOL - 1; i++)
+                {
+                    nodo.apuntadores.Add(reader.ReadInt64());
+                    nodo.claves.Add(reader.ReadInt32());
+                }
+
+                nodo.apuntadores.Add(reader.ReadInt64());
+                nodos.Add(nodo);
+                reader.Close();
+                CerrarArchivoArbol();
+            }
+            else
+            {
+                return nodos;
+            }
+
+
+            if (nodos[0].tipo == 'H')
+                return nodos;
+            else
+            {
+                List<NodoArbol> temp = GetNodosFromDenso(atributo, nodos[0]);
+                foreach (var item in temp)
+                {
+                    nodos.Add(item);
+                }
+            }
+
+            return nodos;
+        }
+        public List<NodoArbol> GetNodosFromDenso(Atributo atributo, NodoArbol denso)
+        {
+            List<NodoArbol> nodos = new List<NodoArbol>();
+            AbrirArchivoArbol(atributo);
+
+            BinaryReader reader = new BinaryReader(archivoArbol);
+
+            foreach (var item in denso.apuntadores)
+            {
+                if (item == -1) break;
+                reader.BaseStream.Position = item;
+
+                NodoArbol nodo = new NodoArbol();
+
+                nodo.tipo = System.Convert.ToChar(reader.ReadByte());
+                nodo.direccion = reader.ReadInt64();
+                nodo.claves = new List<int>();
+                nodo.apuntadores = new List<long>();
+
+                for (int i = 0; i < NodoArbol.K_ARBOL - 1; i++)
+                {
+                    nodo.apuntadores.Add(reader.ReadInt64());
+                    nodo.claves.Add(reader.ReadInt32());
+                }
+
+                nodo.apuntadores.Add(reader.ReadInt64());
+                nodos.Add(nodo);
+            }
+            reader.Close();
+            CerrarArchivoArbol();
+
+            int tam_denso = nodos.Count;
+            for (int i = 0; i < tam_denso; i++)
+            {
+                NodoArbol item = nodos[i];
+                if (item.tipo != 'H')
+                {
+                    List<NodoArbol> temp;
+                    temp = GetNodosFromDenso(atributo, item);
+                    foreach (var item2 in temp)
+                    {
+                        nodos.Add(item2);
+                    }
+                }
+            }
+
+            return nodos;
+
+        }
+
+        public bool CondicionesIndPrimarioArbol(Atributo atributo_prim_arbol, int dato_indice)
+        {
+            //Si no tiene registros insertados, sólo creamos el archivo y nos regresamos
+            if (atributo_prim_arbol.dirDatos == -1)
+            {
+                //Escribimos la cabecera del atributo en 0 para que apunte al primero
+                CrearArchivoIndice(atributo_prim_arbol);
+                EscribeCabeceraIndice(atributo_prim_arbol.direccion, 0);
+                return true;
+            }
+            //Si sí hay datos la única condición que tiene que cumplir es que el arreglo no tenga el dato
+            else
+            {
+                Arbol arbol = new Arbol(GetNodos(atributo_prim_arbol), atributo_prim_arbol);
+                if (arbol.ContieneClave(dato_indice))
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        public void CrearArchivoIndice(Atributo atributo)
+        {
+            string file = atributo.id+".idx";
+            archivoArbol = new FileStream(file, FileMode.Create);
+            archivoArbol.Close();
+
+        }
+
+        public void EscribeCabeceraIndice(long direccion, long cabecera)
+        {
+            BinaryWriter bw = new BinaryWriter(file);
+            file.Position = direccion + 57;
+            bw.Write(cabecera);
+        }
+
+        public void AccionesArbolPrimario(Atributo atributo, int dato, long direccion)
+        {
+            Arbol arbol_primario = new Arbol(GetNodos(atributo), atributo);
+            InsercionArbol(arbol_primario, dato, direccion);
+        }
+
+
+        public void InsercionArbol(Arbol arbol, int dato, long direccion)
+        {
+            // Si no existen nodos en el árbol, se crea la primera hoja y se le inserta la primera clave
+            if (arbol.nodos.Count == 0)
+            {
+                NodoArbol nuevo = CreaNodoArbol(arbol.atributo, 'H');
+                nuevo.apuntadores[0] = direccion;
+                nuevo.claves[0] = dato;
+                EscribeNodoArbolEnArchivo(arbol.atributo, nuevo);
+
+                EscribeCabeceraIndice(arbol.atributo.direccion, nuevo.direccion);
+            }
+            // Si no contiene raíz se inserta en la única hoja que se tiene en el árbol
+            else if (!arbol.ContieneRaiz())
+            {
+                NodoArbol hoja_unica = arbol.nodos[0];
+                List<NodoArbol> nodos = InsertaDatoEnHoja(arbol.atributo, hoja_unica, dato, direccion);
+                if (nodos.Count == 2)
+                {
+                    NodoArbol raiz = CreaNodoArbol(arbol.atributo, 'R');
+                    raiz.apuntadores[0] = nodos[0].direccion;
+                    raiz.apuntadores[1] = nodos[1].direccion;
+                    raiz.claves[0] = nodos[1].claves[0];
+                    EscribeCabeceraIndice(arbol.atributo.direccion, raiz.direccion);
+                    EscribeNodoArbolEnArchivo(arbol.atributo, raiz);
+                }
+            }
+            else
+            {
+                NodoArbol nodo_padre;
+                NodoArbol nodo_hoja = arbol.GetRaiz();
+
+                do
+                {
+                    nodo_padre = nodo_hoja;
+                    int index = nodo_padre.DevuelvePosicion(dato);
+                    nodo_hoja = arbol.GetNodo(nodo_padre.apuntadores[index]);
+                } while (nodo_hoja.tipo != 'H');
+
+                List<NodoArbol> nodos = InsertaDatoEnHoja(arbol.atributo, nodo_hoja, dato, direccion);
+                if (nodos.Count == 2)
+                {
+                    ActualizaPadre(arbol, nodo_padre, nodos[1].claves[0], nodos[1].direccion);
+                }
+            }
+        }
+
+        public List<NodoArbol> InsertaDatoEnHoja(Atributo atributo, NodoArbol nodo, int dato, long direccion)
+        {
+            // Si no se pudo insertar significa que se tiene que dividir el nodo
+            if (!nodo.InsertaEnHoja(dato, direccion))
+            {
+                List<NodoArbol> res = DivideHoja(nodo, CreaNodoArbol(atributo, 'H'), dato, direccion);
+                EscribeNodoArbolEnArchivo(atributo, res[0]);
+                EscribeNodoArbolEnArchivo(atributo, res[1]);
+                return res;
+            }
+            // Si sí se insertó simplemente se actualiza en el archivo
+            else
+            {
+                EscribeNodoArbolEnArchivo(atributo, nodo);
+                List<NodoArbol> res = new List<NodoArbol> { nodo };
+                return res;
+            }
+        }
+
+
+        public List<NodoArbol> DivideHoja(NodoArbol nodo, NodoArbol nodo_nuevo2, int dato, long direccion)
+        {
+            int idx_medio = (NodoArbol.K_ARBOL - 1) / 2 - 1;
+
+            // Se mueven los datos según si es derecha o izquierda
+            List<long> apuntadores = new List<long>();
+            List<int> claves = new List<int>();
+
+            foreach (var item in nodo.apuntadores)
+                apuntadores.Add(item);
+
+            foreach (var item in nodo.claves)
+                claves.Add(item);
+
+            claves.Add(dato);
+            claves.Sort();
+
+            NodoArbol nodo_nuevo1 = new NodoArbol();
+            nodo_nuevo1.tipo = nodo.tipo;
+            nodo_nuevo1.direccion = nodo.direccion;
+            nodo_nuevo1.apuntadores[NodoArbol.K_ARBOL - 1] = nodo.apuntadores[NodoArbol.K_ARBOL - 1];
+
+            int idx_viejo = 0, idx_nuevo = 0, idx_temp = 0;
+            for (int i = 0; i < NodoArbol.K_ARBOL; i++)
+            {
+                if (i <= idx_medio)
+                {
+                    if (claves[i] == dato)
+                        nodo_nuevo1.apuntadores[idx_viejo] = direccion;
+                    else
+                        nodo_nuevo1.apuntadores[idx_viejo] = apuntadores[idx_temp++];
+                    nodo_nuevo1.claves[idx_viejo++] = claves[i];
+                }
+                else
+                {
+                    if (claves[i] == dato)
+                        nodo_nuevo2.apuntadores[idx_nuevo] = direccion;
+                    else
+                        nodo_nuevo2.apuntadores[idx_nuevo] = apuntadores[idx_temp++];
+                    nodo_nuevo2.claves[idx_nuevo++] = claves[i];
+                }
+            }
+
+            nodo_nuevo2.apuntadores[NodoArbol.K_ARBOL - 1] = nodo_nuevo1.apuntadores[NodoArbol.K_ARBOL - 1];
+            nodo_nuevo1.apuntadores[NodoArbol.K_ARBOL - 1] = nodo_nuevo2.direccion;
+
+            return new List<NodoArbol> { nodo_nuevo1, nodo_nuevo2 };
+        }
+
+        void ActualizaPadre(Arbol arbol, NodoArbol nodo_padre, int dato, long direccion)
+        {
+            if (nodo_padre.InsertaEnNodoDenso(dato, direccion))
+                EscribeNodoArbolEnArchivo(arbol.atributo, nodo_padre);
+            else
+            {
+                int tipo = nodo_padre.tipo;
+                if (tipo == 'R') nodo_padre.tipo = 'I';
+
+                List<int> indices_ordenados = new List<int>();
+                foreach (var item in nodo_padre.claves)
+                    indices_ordenados.Add(item);
+
+                indices_ordenados.Add(dato);
+                indices_ordenados.Sort();
+                int idx_mitad = (NodoArbol.K_ARBOL - 1) / 2;
+                int clave_arriba = indices_ordenados[idx_mitad];
+
+
+                List<NodoArbol> nodos_intermedios = DivideNodoDenso(indices_ordenados, nodo_padre, CreaNodoArbol(arbol.atributo, 'I'), dato, direccion);
+
+                EscribeNodoArbolEnArchivo(arbol.atributo, nodos_intermedios[0]);
+                EscribeNodoArbolEnArchivo(arbol.atributo, nodos_intermedios[1]);
+
+                if (tipo == 'R')
+                {
+                    NodoArbol nueva_raiz = CreaNodoArbol(arbol.atributo, 'R');
+                    nueva_raiz.apuntadores[0] = nodos_intermedios[0].direccion;
+                    nueva_raiz.apuntadores[1] = nodos_intermedios[1].direccion;
+                    nueva_raiz.claves[0] = clave_arriba;
+                    EscribeCabeceraIndice(arbol.atributo.direccion, nueva_raiz.direccion);
+                    EscribeNodoArbolEnArchivo(arbol.atributo, nueva_raiz);
+                }
+                else
+                {
+                    NodoArbol nodo_padre_temp = arbol.GetPadre(nodos_intermedios[0]);
+                    ActualizaPadre(new Arbol(GetNodos(arbol.atributo), arbol.atributo), nodo_padre_temp, clave_arriba, nodos_intermedios[1].direccion);
+                }
+            }
+        }
+
+        public List<NodoArbol> DivideNodoDenso(List<int> claves, NodoArbol nodo, NodoArbol nodo_nuevo2, int dato, long direccion)
+        {
+            int idx_medio = (NodoArbol.K_ARBOL - 1) / 2;
+
+            List<long> apuntadores = new List<long>();
+
+            foreach (var item in nodo.apuntadores)
+                apuntadores.Add(item);
+
+            NodoArbol nodo_nuevo1 = new NodoArbol();
+            nodo_nuevo1.tipo = nodo.tipo;
+            nodo_nuevo1.direccion = nodo.direccion;
+
+            int idx_clave_medio = nodo.claves.IndexOf(claves[idx_medio]) + 1;
+            nodo_nuevo1.apuntadores[0] = apuntadores[0];
+            nodo_nuevo2.apuntadores[0] = apuntadores[idx_clave_medio];
+
+            apuntadores.RemoveAt(idx_clave_medio);
+            apuntadores.RemoveAt(0);
+
+
+            int idx_viejo = 0, idx_nuevo = 0, idx_temp = 0;
+            for (int i = 0; i < NodoArbol.K_ARBOL; i++)
+            {
+                if (i < idx_medio)
+                {
+                    if (claves[i] == dato)
+                        nodo_nuevo1.apuntadores[idx_viejo + 1] = direccion;
+                    else
+                        nodo_nuevo1.apuntadores[idx_viejo + 1] = apuntadores[idx_temp++];
+                    nodo_nuevo1.claves[idx_viejo++] = claves[i];
+                }
+                else if (i > idx_medio)
+                {
+                    if (claves[i] == dato)
+                        nodo_nuevo2.apuntadores[idx_nuevo + 1] = direccion;
+                    else
+                        nodo_nuevo2.apuntadores[idx_nuevo + 1] = apuntadores[idx_temp++];
+                    nodo_nuevo2.claves[idx_nuevo++] = claves[i];
+                }
+            }
+            return new List<NodoArbol> { nodo_nuevo1, nodo_nuevo2 };
+        }
+
+        public void EscribeNodoArbolEnArchivo(Atributo atributo, NodoArbol nodo)
+        {
+            AbrirArchivoArbol(atributo);
+            BinaryWriter bn = new BinaryWriter(archivoArbol);
+            bn.BaseStream.Position = nodo.direccion;
+            bn.Write(nodo.tipo);
+            bn.Write(nodo.direccion);
+            for (int i = 0; i < NodoArbol.K_ARBOL; i++)
+            {
+                bn.Write(nodo.apuntadores[i]);
+                if (i != NodoArbol.K_ARBOL - 1)
+                    bn.Write(nodo.claves[i]);
+            }
+            CerrarArchivoArbol();
+        }
+
+        public NodoArbol CreaNodoArbol(Atributo atributo, char tipo)
+        {
+            AbrirArchivoArbol(atributo);
+            NodoArbol nodo = new NodoArbol();
+            nodo.tipo = tipo;
+            nodo.direccion = archivoArbol.Length;
+            CerrarArchivoArbol();
+            return nodo;
+        }
+
+        public void EliminaDeArbolPrimario(Atributo atributo, int dato)
+        {
+            Arbol arbol = new Arbol(GetNodos(atributo), atributo);
+            NodoArbol nodo = arbol.GetNodoDeLlave(dato);
+            long direccion = nodo.GetApuntadorHoja(dato);
+            EliminaDeArbol(arbol, nodo, dato, direccion);
+        }
+
+        bool EliminaDeArbol(Arbol arbol, NodoArbol nodo, int dato, long direccion)
+        {
+            int tam_minimo = (NodoArbol.K_ARBOL - 1) / 2;
+            char tipo = nodo.tipo;
+
+            if (tipo == 'H')
+            {
+                if (!nodo.EliminaEnHoja(dato))
+                    return false;
+            }
+            else
+            {
+                if (!nodo.EliminaEnNodoDenso(dato, direccion))
+                    return false;
+            }
+
+            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+
+            if (tipo != 'R')
+            {
+                if (nodo.CountClaves() < tam_minimo)
+                {
+                    NodoArbol padre = arbol.GetPadre(nodo);
+                    NodoArbol vecino_der = arbol.GetVecinoDer(nodo);
+                    NodoArbol vecino_izq = arbol.GetVecinoIzq(nodo);
+
+                    if (vecino_der != null && arbol.CheckMismoPadre(nodo, vecino_der) && vecino_der.CountClaves() - 1 >= tam_minimo)
+                    {
+                        if (tipo == 'H')
+                        {
+                            long prestado_dir = vecino_der.apuntadores[0];
+                            int prestado_cve = vecino_der.claves[0];
+
+                            if (!vecino_der.EliminaEnHoja(prestado_cve))
+                                return false;
+                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+
+                            nodo.InsertaEnHoja(prestado_cve, prestado_dir);
+                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+
+                            int idx_actualizar_padre = padre.apuntadores.IndexOf(nodo.direccion);
+                            padre.claves[idx_actualizar_padre] = vecino_der.claves[0];
+                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+                        }
+                        else
+                        {
+                            long vecino_dir = vecino_der.apuntadores[0];
+                            int vecino_cve = vecino_der.claves[0];
+                            int idx_cve_padre = padre.apuntadores.IndexOf(nodo.direccion);
+                            int padre_cve = padre.claves[idx_cve_padre];
+
+                            if (!vecino_der.EliminaEnNodoDenso(vecino_cve, vecino_dir))
+                                return false;
+                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+
+                            padre.claves[idx_cve_padre] = vecino_cve;
+                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+
+                            nodo.InsertaEnNodoDenso(padre_cve, vecino_dir);
+                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                        }
+                    }
+                    else if (vecino_izq != null && arbol.CheckMismoPadre(nodo, vecino_izq) && vecino_izq.CountClaves() - 1 >= tam_minimo)
+                    {
+                        if (tipo == 'H')
+                        {
+                            long prestado_dir = vecino_izq.apuntadores[vecino_izq.CountClaves() - 1];
+                            int prestado_cve = vecino_izq.claves[vecino_izq.CountClaves() - 1];
+
+                            if (!vecino_izq.EliminaEnHoja(prestado_cve))
+                                return false;
+                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+
+                            nodo.InsertaEnHoja(prestado_cve, prestado_dir);
+                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+
+                            int idx_actualizar_padre = padre.apuntadores.IndexOf(vecino_izq.direccion);
+                            padre.claves[idx_actualizar_padre] = prestado_cve;
+                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+                        }
+                        else
+                        {
+                            long vecino_dir = vecino_izq.apuntadores[vecino_izq.CountClaves()];
+                            int vecino_cve = vecino_izq.claves[vecino_izq.CountClaves() - 1];
+                            int idx_cve_padre = padre.apuntadores.IndexOf(vecino_izq.direccion);
+                            int padre_cve = padre.claves[idx_cve_padre];
+
+                            if (!vecino_izq.EliminaEnNodoDenso(vecino_cve, vecino_dir))
+                                return false;
+                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+
+                            padre.claves[idx_cve_padre] = vecino_cve;
+                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+
+                            nodo.InsertaEnNodoDenso(padre_cve, vecino_dir);
+                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                        }
+                    }
+                    else if (vecino_der != null && arbol.CheckMismoPadre(nodo, vecino_der))
+                    {
+                        if (tipo == 'H')
+                        {
+                            for (int i = 0; i < vecino_der.CountClaves(); i++)
+                                nodo.InsertaEnHoja(vecino_der.claves[i], vecino_der.apuntadores[i]);
+                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                            if (padre.tipo == 'R' && padre.CountClaves() == 1)
+                            {
+                                EscribeCabeceraIndice(arbol.atributo.direccion, vecino_der.direccion);
+                            }
+                            else
+                            {
+                                int idx_eliminar_padre = padre.apuntadores.IndexOf(vecino_der.direccion);
+                                int dato_nuevo = padre.claves[idx_eliminar_padre - 1];
+                                long dir_nueva = padre.apuntadores[idx_eliminar_padre];
+
+                                return EliminaDeArbol(arbol, padre, dato_nuevo, dir_nueva);
+                            }
+                        }
+                        else
+                        {
+                            int cve_padre = padre.claves[padre.apuntadores.IndexOf(nodo.direccion)];
+                            long dir0_vecino = vecino_der.apuntadores[0];
+
+                            vecino_der.InsertaEnNodoDenso(cve_padre, dir0_vecino);
+
+                            for (int i = 0; i < nodo.CountClaves(); i++)
+                                vecino_der.InsertaEnNodoDenso(nodo.claves[i], nodo.apuntadores[i + 1]);
+                            vecino_der.apuntadores[0] = nodo.apuntadores[0];
+
+                            if (padre.tipo == 'R' && padre.CountClaves() == 1)
+                            {
+                                vecino_der.tipo = 'R';
+                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+                                EscribeCabeceraIndice(arbol.atributo.direccion, vecino_der.direccion);
+                            }
+                            else
+                            {
+                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+                                return EliminaDeArbol(arbol, padre, cve_padre, nodo.direccion);
+                            }
+                        }
+                    }
+                    else if (vecino_izq != null && arbol.CheckMismoPadre(nodo, vecino_izq))
+                    {
+                        if (tipo == 'H')
+                        {
+                            for (int i = 0; i < nodo.CountClaves(); i++)
+                                vecino_izq.InsertaEnHoja(nodo.claves[i], nodo.apuntadores[i]);
+                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                            if (padre.tipo == 'R' && padre.CountClaves() == 1)
+                            {
+                                vecino_izq.tipo = 'R';
+                                EscribeCabeceraIndice(arbol.atributo.direccion, vecino_izq.direccion);
+                            }
+                            else
+                            {
+                                int idx_eliminar_padre = padre.apuntadores.IndexOf(nodo.direccion);
+                                int dato_nuevo = padre.claves[idx_eliminar_padre - 1];
+                                long dir_nueva = padre.apuntadores[idx_eliminar_padre];
+
+                                return EliminaDeArbol(arbol, padre, dato_nuevo, dir_nueva);
+                            }
+                        }
+                        else
+                        {
+                            int cve_padre = padre.claves[padre.apuntadores.IndexOf(vecino_izq.direccion)];
+                            long dir0_nodo = nodo.apuntadores[0];
+
+                            vecino_izq.InsertaEnNodoDenso(cve_padre, dir0_nodo);
+
+                            for (int i = 0; i < nodo.CountClaves(); i++)
+                                vecino_izq.InsertaEnNodoDenso(nodo.claves[i], nodo.apuntadores[i + 1]);
+
+                            if (padre.tipo == 'R' && padre.CountClaves() == 1)
+                            {
+                                vecino_izq.tipo = 'R';
+                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                                EscribeCabeceraIndice(arbol.atributo.direccion, vecino_izq.direccion);
+                            }
+                            else
+                            {
+                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                                return EliminaDeArbol(arbol, padre, cve_padre, nodo.direccion);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /*public void AccionesArbolSecundario(Atributo atributo, RegistroDatos registro, int index_atributo)
+        {
+            // Si no hay archivo lo crea
+            if (atributo.dirDatos == -1)
+            {
+                CrearArchivoIndice(atributo);
+                EscribeCabeceraIndice(atributo.direccion, 0);
+            }
+
+            Arbol arbol = new Arbol(GetNodos(atributo), atributo);
+            int dato = BitConverter.ToInt32(registro.atributos[index_atributo], 0);
+
+            // Si ya contiene la clave, simplemente la inserta en su bloque
+            if (arbol.ContieneClave(dato))
+            {
+                //Sólo inserta la dirección del registro en el bloque denso
+                long dir = arbol.GetDireccion(dato);
+                List<long> bloque_denso = GetBloqueDenso(atributo, dir);
+                bloque_denso.Add(registro.direccion);
+                bloque_denso.Sort();
+                EscribeBloqueDenso(atributo, bloque_denso, dir);
+            }
+            // Sino crea el nuevo bloque y la dirección del bloque se inserta en el árbol con la clave de búsqueda.
+            else
+            {
+                //Crea nuevo bloque denso con la dirección del registro dentro
+                long direccion_bloque = GetTamanioArchivoIndice(atributo);
+                InicializaBloqueDensoSecundario(atributo, direccion_bloque);
+                List<long> bloque_denso = GetBloqueDenso(atributo, direccion_bloque);
+                bloque_denso.Add(registro.direccion);
+                EscribeBloqueDenso(atributo, bloque_denso, direccion_bloque);
+
+                //Inserta en el árbol
+                InsercionArbol(arbol, dato, direccion_bloque);
+            }
+        }*/
+
+        public List<long> GetBloqueDenso(Atributo atributo, long cabecera)
+        {
+            List<long> res = new List<long>();
+            AbrirArchivoArbol(atributo);
+            BinaryReader bn = new BinaryReader(archivoArbol);
+            bn.BaseStream.Position = cabecera;
+            for (int i = 0; i < NREGISTROS_SENCILLOS; i++)
+            {
+                long temp = bn.ReadInt64();
+                if (temp != -1)
+                    res.Add(temp);
+            }
+            CerrarArchivoArbol();
+            return res;
+        }
+
+        public void EscribeBloqueDenso(Atributo atributo, List<long> direcciones, long cabecera)
+        {
+            InicializaBloqueDensoSecundario(atributo, cabecera);
+            AbrirArchivoArbol(atributo);
+            BinaryWriter bn = new BinaryWriter(archivoArbol);
+            bn.BaseStream.Position = cabecera;
+            foreach (var item in direcciones)
+                bn.Write(item);
+            CerrarArchivoArbol();
+        }
+
+        public long GetTamanioArchivoIndice(Atributo atributo)
+        {
+            AbrirArchivoArbol(atributo);
+            long temp = archivoArbol.Length;
+            CerrarArchivoArbol();
+            return temp;
+        }
+
+        public void InicializaBloqueDensoSecundario(Atributo atributo, long direccion)
+        {
+            AbrirArchivoArbol(atributo);
+
+            BinaryWriter bn = new BinaryWriter(archivoArbol);
+            bn.BaseStream.Position = direccion;
+            for (int i = 0; i < NREGISTROS_SENCILLOS; i++)
+            {
+                bn.Write((long)-1);
+            }
+            bn.BaseStream.Position = direccion + TAMANIO_BLOQUE - 8;
+            bn.Write((long)-1);
+
+            CerrarArchivoArbol();
+        }
+
     }
+
+
 }

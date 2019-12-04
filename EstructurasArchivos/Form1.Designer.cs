@@ -102,9 +102,17 @@
             this.guardarRegistroBoton = new System.Windows.Forms.Button();
             this.mostrarRegistros = new System.Windows.Forms.Button();
             this.MuestraIndice = new System.Windows.Forms.Button();
+            this.editarRegistro = new System.Windows.Forms.Button();
+            this.elimina_registro = new System.Windows.Forms.Button();
+            this.muestraIndiceSecundario = new System.Windows.Forms.Button();
+            this.editaRegistro = new System.Windows.Forms.DataGridView();
+            this.editRegisters = new System.Windows.Forms.Button();
+            this.arbol_primario = new System.Windows.Forms.Button();
+            this.arbol_secundario = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.entidades)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.atributos)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tablaInsertarRegistro)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.editaRegistro)).BeginInit();
             this.SuspendLayout();
             // 
             // createFile
@@ -196,7 +204,9 @@
             "Ninguno",
             "Clave de Busqueda",
             "Indice Primaria",
-            "Indice Secundaria"});
+            "Indice Secundaria",
+            "Arbol B+ IP",
+            "Arbol B+ IS"});
             this.tipoIndiceAtributo.Location = new System.Drawing.Point(795, 220);
             this.tipoIndiceAtributo.Name = "tipoIndiceAtributo";
             this.tipoIndiceAtributo.Size = new System.Drawing.Size(122, 24);
@@ -715,7 +725,7 @@
             // 
             this.label20.AutoSize = true;
             this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label20.Location = new System.Drawing.Point(12, 539);
+            this.label20.Location = new System.Drawing.Point(201, 82);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(223, 32);
             this.label20.TabIndex = 66;
@@ -724,14 +734,15 @@
             // entidadInsertarEntidad
             // 
             this.entidadInsertarEntidad.FormattingEnabled = true;
-            this.entidadInsertarEntidad.Location = new System.Drawing.Point(12, 574);
+            this.entidadInsertarEntidad.Location = new System.Drawing.Point(12, 199);
             this.entidadInsertarEntidad.Name = "entidadInsertarEntidad";
             this.entidadInsertarEntidad.Size = new System.Drawing.Size(217, 24);
             this.entidadInsertarEntidad.TabIndex = 67;
+            this.entidadInsertarEntidad.SelectedIndexChanged += new System.EventHandler(this.EntidadInsertarEntidad_SelectedIndexChanged);
             // 
             // insertarRegistroBoton
             // 
-            this.insertarRegistroBoton.Location = new System.Drawing.Point(12, 604);
+            this.insertarRegistroBoton.Location = new System.Drawing.Point(12, 229);
             this.insertarRegistroBoton.Name = "insertarRegistroBoton";
             this.insertarRegistroBoton.Size = new System.Drawing.Size(217, 32);
             this.insertarRegistroBoton.TabIndex = 68;
@@ -742,16 +753,17 @@
             // tablaInsertarRegistro
             // 
             this.tablaInsertarRegistro.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.tablaInsertarRegistro.Location = new System.Drawing.Point(12, 641);
+            this.tablaInsertarRegistro.Location = new System.Drawing.Point(12, 266);
             this.tablaInsertarRegistro.Name = "tablaInsertarRegistro";
             this.tablaInsertarRegistro.RowHeadersWidth = 51;
             this.tablaInsertarRegistro.RowTemplate.Height = 24;
-            this.tablaInsertarRegistro.Size = new System.Drawing.Size(617, 97);
+            this.tablaInsertarRegistro.Size = new System.Drawing.Size(607, 270);
             this.tablaInsertarRegistro.TabIndex = 69;
+            this.tablaInsertarRegistro.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.TablaInsertarRegistro_CellContentDoubleClick);
             // 
             // guardarRegistroBoton
             // 
-            this.guardarRegistroBoton.Location = new System.Drawing.Point(235, 603);
+            this.guardarRegistroBoton.Location = new System.Drawing.Point(235, 228);
             this.guardarRegistroBoton.Name = "guardarRegistroBoton";
             this.guardarRegistroBoton.Size = new System.Drawing.Size(201, 32);
             this.guardarRegistroBoton.TabIndex = 70;
@@ -761,7 +773,7 @@
             // 
             // mostrarRegistros
             // 
-            this.mostrarRegistros.Location = new System.Drawing.Point(442, 604);
+            this.mostrarRegistros.Location = new System.Drawing.Point(442, 229);
             this.mostrarRegistros.Name = "mostrarRegistros";
             this.mostrarRegistros.Size = new System.Drawing.Size(177, 32);
             this.mostrarRegistros.TabIndex = 71;
@@ -771,19 +783,96 @@
             // 
             // MuestraIndice
             // 
-            this.MuestraIndice.Location = new System.Drawing.Point(442, 564);
+            this.MuestraIndice.Location = new System.Drawing.Point(430, 174);
             this.MuestraIndice.Name = "MuestraIndice";
             this.MuestraIndice.Size = new System.Drawing.Size(177, 34);
             this.MuestraIndice.TabIndex = 72;
-            this.MuestraIndice.Text = "MuestraIndice";
+            this.MuestraIndice.Text = "Muestra Indice";
             this.MuestraIndice.UseVisualStyleBackColor = true;
             this.MuestraIndice.Click += new System.EventHandler(this.MuestraIndice_Click);
+            // 
+            // editarRegistro
+            // 
+            this.editarRegistro.Location = new System.Drawing.Point(18, 555);
+            this.editarRegistro.Name = "editarRegistro";
+            this.editarRegistro.Size = new System.Drawing.Size(75, 26);
+            this.editarRegistro.TabIndex = 73;
+            this.editarRegistro.Text = "Editar";
+            this.editarRegistro.UseVisualStyleBackColor = true;
+            this.editarRegistro.Click += new System.EventHandler(this.EditarRegistro_Click);
+            // 
+            // elimina_registro
+            // 
+            this.elimina_registro.Location = new System.Drawing.Point(112, 555);
+            this.elimina_registro.Name = "elimina_registro";
+            this.elimina_registro.Size = new System.Drawing.Size(164, 26);
+            this.elimina_registro.TabIndex = 74;
+            this.elimina_registro.Text = "Eliminar Registro";
+            this.elimina_registro.UseVisualStyleBackColor = true;
+            this.elimina_registro.Click += new System.EventHandler(this.Elimina_registro_Click);
+            // 
+            // muestraIndiceSecundario
+            // 
+            this.muestraIndiceSecundario.Location = new System.Drawing.Point(430, 134);
+            this.muestraIndiceSecundario.Name = "muestraIndiceSecundario";
+            this.muestraIndiceSecundario.Size = new System.Drawing.Size(177, 34);
+            this.muestraIndiceSecundario.TabIndex = 75;
+            this.muestraIndiceSecundario.Text = "Indice Secundario";
+            this.muestraIndiceSecundario.UseVisualStyleBackColor = true;
+            this.muestraIndiceSecundario.Click += new System.EventHandler(this.MuestraIndiceSecundario_Click);
+            // 
+            // editaRegistro
+            // 
+            this.editaRegistro.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.editaRegistro.Location = new System.Drawing.Point(18, 604);
+            this.editaRegistro.Name = "editaRegistro";
+            this.editaRegistro.RowHeadersWidth = 51;
+            this.editaRegistro.RowTemplate.Height = 24;
+            this.editaRegistro.Size = new System.Drawing.Size(601, 70);
+            this.editaRegistro.TabIndex = 76;
+            // 
+            // editRegisters
+            // 
+            this.editRegisters.Location = new System.Drawing.Point(18, 680);
+            this.editRegisters.Name = "editRegisters";
+            this.editRegisters.Size = new System.Drawing.Size(75, 26);
+            this.editRegisters.TabIndex = 77;
+            this.editRegisters.Text = "Editar Registro";
+            this.editRegisters.UseVisualStyleBackColor = true;
+            this.editRegisters.Click += new System.EventHandler(this.EditRegisters_Click);
+            // 
+            // arbol_primario
+            // 
+            this.arbol_primario.Location = new System.Drawing.Point(247, 176);
+            this.arbol_primario.Name = "arbol_primario";
+            this.arbol_primario.Size = new System.Drawing.Size(177, 34);
+            this.arbol_primario.TabIndex = 78;
+            this.arbol_primario.Text = "Arbol Primario";
+            this.arbol_primario.UseVisualStyleBackColor = true;
+            this.arbol_primario.Click += new System.EventHandler(this.Arbol_primario_Click);
+            // 
+            // arbol_secundario
+            // 
+            this.arbol_secundario.Location = new System.Drawing.Point(247, 134);
+            this.arbol_secundario.Name = "arbol_secundario";
+            this.arbol_secundario.Size = new System.Drawing.Size(177, 34);
+            this.arbol_secundario.TabIndex = 79;
+            this.arbol_secundario.Text = "Arbol Secundario";
+            this.arbol_secundario.UseVisualStyleBackColor = true;
+            this.arbol_secundario.Click += new System.EventHandler(this.Arbol_secundario_Click);
             // 
             // cargarAtributos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1488, 750);
+            this.Controls.Add(this.arbol_secundario);
+            this.Controls.Add(this.arbol_primario);
+            this.Controls.Add(this.editRegisters);
+            this.Controls.Add(this.editaRegistro);
+            this.Controls.Add(this.muestraIndiceSecundario);
+            this.Controls.Add(this.elimina_registro);
+            this.Controls.Add(this.editarRegistro);
             this.Controls.Add(this.MuestraIndice);
             this.Controls.Add(this.mostrarRegistros);
             this.Controls.Add(this.guardarRegistroBoton);
@@ -849,6 +938,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.entidades)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.atributos)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tablaInsertarRegistro)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.editaRegistro)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -929,6 +1019,13 @@
         private System.Windows.Forms.Button guardarRegistroBoton;
         private System.Windows.Forms.Button mostrarRegistros;
         private System.Windows.Forms.Button MuestraIndice;
+        private System.Windows.Forms.Button editarRegistro;
+        private System.Windows.Forms.Button elimina_registro;
+        private System.Windows.Forms.Button muestraIndiceSecundario;
+        private System.Windows.Forms.DataGridView editaRegistro;
+        private System.Windows.Forms.Button editRegisters;
+        private System.Windows.Forms.Button arbol_primario;
+        private System.Windows.Forms.Button arbol_secundario;
     }
 }
 

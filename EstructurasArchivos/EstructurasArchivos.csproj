@@ -46,6 +46,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Arbol.cs" />
+    <Compile Include="ArbolPrimario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ArbolPrimario.Designer.cs">
+      <DependentUpon>ArbolPrimario.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ArbolSecundario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ArbolSecundario.Designer.cs">
+      <DependentUpon>ArbolSecundario.cs</DependentUpon>
+    </Compile>
     <Compile Include="Atributo.cs" />
     <Compile Include="Entidad.cs" />
     <Compile Include="File.cs" />
@@ -61,13 +74,29 @@
     <Compile Include="Indice.Designer.cs">
       <DependentUpon>Indice.cs</DependentUpon>
     </Compile>
+    <Compile Include="IndiceSecundario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="IndiceSecundario.Designer.cs">
+      <DependentUpon>IndiceSecundario.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NodoArbol.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="ArbolPrimario.resx">
+      <DependentUpon>ArbolPrimario.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ArbolSecundario.resx">
+      <DependentUpon>ArbolSecundario.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Indice.resx">
       <DependentUpon>Indice.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IndiceSecundario.resx">
+      <DependentUpon>IndiceSecundario.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

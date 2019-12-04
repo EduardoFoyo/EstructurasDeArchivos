@@ -25,7 +25,6 @@ namespace EstructurasArchivos
 
         private void Indice_Load(object sender, EventArgs e)
         {
-            
             if (tipo == 'E')
             {
                 indexFile = new FileStream(this.id + ".idx", FileMode.Open, FileAccess.ReadWrite);
@@ -38,7 +37,7 @@ namespace EstructurasArchivos
                     string[] data = new string[2];
                     actual = idr.ReadInt32();
                     direccion = idr.ReadInt64();
-                    if (direccion != -1)
+                    if (direccion != -1 && direccion != -2)
                     {
                         data[0] = actual.ToString();
                         data[1] = direccion.ToString();
@@ -63,7 +62,7 @@ namespace EstructurasArchivos
                     string[] data = new string[2];
                     actual = idr.ReadString();
                     direccion = idr.ReadInt64();
-                    if (direccion != -1)
+                    if (direccion != -1 && direccion != -2)
                     {
                         data[0] = actual.ToString();
                         data[1] = direccion.ToString();
