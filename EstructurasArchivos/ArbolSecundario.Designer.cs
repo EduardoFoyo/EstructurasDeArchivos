@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             this.arbol2_claves = new System.Windows.Forms.DataGridView();
-            this.Clave_Busqueda = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn24 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.archivo_idx_secu_ab = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -45,6 +43,8 @@
             this.dataGridViewTextBoxColumn23 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.arbol2_bloque = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Clave_Busqueda = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn24 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.arbol2_claves)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.archivo_idx_secu_ab)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.arbol2_bloque)).BeginInit();
@@ -62,31 +62,15 @@
             this.Clave_Busqueda,
             this.dataGridViewTextBoxColumn24});
             this.arbol2_claves.GridColor = System.Drawing.SystemColors.ButtonFace;
-            this.arbol2_claves.Location = new System.Drawing.Point(881, 25);
+            this.arbol2_claves.Location = new System.Drawing.Point(13, 436);
             this.arbol2_claves.Margin = new System.Windows.Forms.Padding(4);
             this.arbol2_claves.MultiSelect = false;
             this.arbol2_claves.Name = "arbol2_claves";
             this.arbol2_claves.ReadOnly = true;
             this.arbol2_claves.RowHeadersWidth = 51;
-            this.arbol2_claves.Size = new System.Drawing.Size(192, 182);
+            this.arbol2_claves.Size = new System.Drawing.Size(673, 277);
             this.arbol2_claves.TabIndex = 46;
-            // 
-            // Clave_Busqueda
-            // 
-            this.Clave_Busqueda.HeaderText = "CB";
-            this.Clave_Busqueda.MinimumWidth = 6;
-            this.Clave_Busqueda.Name = "Clave_Busqueda";
-            this.Clave_Busqueda.ReadOnly = true;
-            this.Clave_Busqueda.Width = 50;
-            // 
-            // dataGridViewTextBoxColumn24
-            // 
-            this.dataGridViewTextBoxColumn24.HeaderText = "Dirección";
-            this.dataGridViewTextBoxColumn24.MinimumWidth = 6;
-            this.dataGridViewTextBoxColumn24.Name = "dataGridViewTextBoxColumn24";
-            this.dataGridViewTextBoxColumn24.ReadOnly = true;
-            this.dataGridViewTextBoxColumn24.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.dataGridViewTextBoxColumn24.Width = 50;
+            this.arbol2_claves.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.Arbol2_claves_CellContentClick);
             // 
             // archivo_idx_secu_ab
             // 
@@ -115,8 +99,9 @@
             this.archivo_idx_secu_ab.Name = "archivo_idx_secu_ab";
             this.archivo_idx_secu_ab.ReadOnly = true;
             this.archivo_idx_secu_ab.RowHeadersWidth = 51;
-            this.archivo_idx_secu_ab.Size = new System.Drawing.Size(837, 415);
+            this.archivo_idx_secu_ab.Size = new System.Drawing.Size(1364, 415);
             this.archivo_idx_secu_ab.TabIndex = 45;
+            this.archivo_idx_secu_ab.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.Archivo_idx_secu_ab_CellContentClick);
             // 
             // dataGridViewTextBoxColumn11
             // 
@@ -218,13 +203,13 @@
             this.arbol2_bloque.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewTextBoxColumn9});
             this.arbol2_bloque.GridColor = System.Drawing.SystemColors.ButtonFace;
-            this.arbol2_bloque.Location = new System.Drawing.Point(881, 245);
+            this.arbol2_bloque.Location = new System.Drawing.Point(694, 436);
             this.arbol2_bloque.Margin = new System.Windows.Forms.Padding(4);
             this.arbol2_bloque.MultiSelect = false;
             this.arbol2_bloque.Name = "arbol2_bloque";
             this.arbol2_bloque.ReadOnly = true;
             this.arbol2_bloque.RowHeadersWidth = 51;
-            this.arbol2_bloque.Size = new System.Drawing.Size(192, 182);
+            this.arbol2_bloque.Size = new System.Drawing.Size(683, 277);
             this.arbol2_bloque.TabIndex = 44;
             // 
             // dataGridViewTextBoxColumn9
@@ -236,11 +221,28 @@
             this.dataGridViewTextBoxColumn9.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.dataGridViewTextBoxColumn9.Width = 125;
             // 
+            // Clave_Busqueda
+            // 
+            this.Clave_Busqueda.HeaderText = "Clave";
+            this.Clave_Busqueda.MinimumWidth = 6;
+            this.Clave_Busqueda.Name = "Clave_Busqueda";
+            this.Clave_Busqueda.ReadOnly = true;
+            this.Clave_Busqueda.Width = 50;
+            // 
+            // dataGridViewTextBoxColumn24
+            // 
+            this.dataGridViewTextBoxColumn24.HeaderText = "Dirección";
+            this.dataGridViewTextBoxColumn24.MinimumWidth = 6;
+            this.dataGridViewTextBoxColumn24.Name = "dataGridViewTextBoxColumn24";
+            this.dataGridViewTextBoxColumn24.ReadOnly = true;
+            this.dataGridViewTextBoxColumn24.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.dataGridViewTextBoxColumn24.Width = 50;
+            // 
             // ArbolSecundario
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1097, 447);
+            this.ClientSize = new System.Drawing.Size(1387, 726);
             this.Controls.Add(this.arbol2_claves);
             this.Controls.Add(this.archivo_idx_secu_ab);
             this.Controls.Add(this.arbol2_bloque);
@@ -256,8 +258,6 @@
         #endregion
 
         private System.Windows.Forms.DataGridView arbol2_claves;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Clave_Busqueda;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn24;
         private System.Windows.Forms.DataGridView archivo_idx_secu_ab;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn12;
@@ -272,5 +272,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn23;
         private System.Windows.Forms.DataGridView arbol2_bloque;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Clave_Busqueda;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn24;
     }
 }

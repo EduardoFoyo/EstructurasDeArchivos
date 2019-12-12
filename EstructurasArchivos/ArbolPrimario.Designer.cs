@@ -70,7 +70,7 @@
             this.archivo_idx_prim_ab.Name = "archivo_idx_prim_ab";
             this.archivo_idx_prim_ab.ReadOnly = true;
             this.archivo_idx_prim_ab.RowHeadersWidth = 51;
-            this.archivo_idx_prim_ab.Size = new System.Drawing.Size(1366, 415);
+            this.archivo_idx_prim_ab.Size = new System.Drawing.Size(1059, 415);
             this.archivo_idx_prim_ab.TabIndex = 33;
             // 
             // dataGridViewTextBoxColumn13
@@ -166,7 +166,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1430, 455);
+            this.ClientSize = new System.Drawing.Size(1104, 455);
             this.Controls.Add(this.archivo_idx_prim_ab);
             this.Name = "ArbolPrimario";
             this.Text = "ArbolPrimario";

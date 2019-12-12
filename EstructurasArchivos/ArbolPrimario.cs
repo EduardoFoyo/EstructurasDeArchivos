@@ -12,8 +12,8 @@ namespace EstructurasArchivos
 {
     public partial class ArbolPrimario : Form
     {
-        List<NodoArbol> nodos;
-        public ArbolPrimario(List<NodoArbol> nodos)
+        List<Nodo> nodos;
+        public ArbolPrimario(List<Nodo> nodos)
         {
             InitializeComponent();
             this.nodos = nodos;
@@ -25,7 +25,7 @@ namespace EstructurasArchivos
             archivo_idx_prim_ab.Rows.Clear();
 
             string[] filas = new string[11];
-            foreach (NodoArbol nodo in nodos)
+            foreach (Nodo nodo in nodos)
             {
                 filas[0] = nodo.tipo.ToString();
                 filas[1] = nodo.direccion.ToString();
@@ -35,7 +35,7 @@ namespace EstructurasArchivos
                     filas[2 * (i + 1) + 1] = nodo.claves[i].ToString();
                 }
 
-                filas[10] = nodo.apuntadores[NodoArbol.K_ARBOL - 1].ToString();
+                filas[10] = nodo.apuntadores[Nodo.CAP - 1].ToString();
                 archivo_idx_prim_ab.Rows.Add(filas);
             }
         }

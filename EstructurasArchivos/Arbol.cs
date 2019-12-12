@@ -8,10 +8,10 @@ namespace EstructurasArchivos
 {
     public class Arbol
     {
-        public List<NodoArbol> nodos;
+        public List<Nodo> nodos;
         public Atributo atributo;
 
-        public Arbol(List<NodoArbol> nodos, Atributo atributo)
+        public Arbol(List<Nodo> nodos, Atributo atributo)
         {
             this.nodos = nodos;
             this.atributo = atributo;
@@ -27,7 +27,7 @@ namespace EstructurasArchivos
             return false;
         }
 
-        public NodoArbol GetRaiz()
+        public Nodo GetRaiz()
         {
             foreach (var nodo in nodos)
             {
@@ -37,7 +37,7 @@ namespace EstructurasArchivos
             return null;
         }
 
-        public NodoArbol GetNodo(long direccion)
+        public Nodo GetNodo(long direccion)
         {
             foreach (var nodo in nodos)
             {
@@ -47,7 +47,7 @@ namespace EstructurasArchivos
             return null;
         }
 
-        public NodoArbol GetPadre(NodoArbol hijo)
+        public Nodo GetPadre(Nodo hijo)
         {
             foreach (var nodo in nodos)
             {
@@ -64,7 +64,7 @@ namespace EstructurasArchivos
 
         public bool ContieneClave(int dato)
         {
-            foreach (NodoArbol nodo in nodos)
+            foreach (Nodo nodo in nodos)
             {
                 if (nodo.tipo == 'H' && nodo.claves.Contains(dato))
                 {
@@ -77,7 +77,7 @@ namespace EstructurasArchivos
         // De la Clave
         public long GetDireccion(int dato)
         {
-            foreach (NodoArbol nodo in nodos)
+            foreach (Nodo nodo in nodos)
             {
                 if (nodo.tipo == 'H' && nodo.claves.Contains(dato))
                 {
@@ -88,9 +88,9 @@ namespace EstructurasArchivos
             return -1;
         }
 
-        public NodoArbol GetNodoDeLlave(int dato)
+        public Nodo GetNodoDeLlave(int dato)
         {
-            foreach (NodoArbol nodo in nodos)
+            foreach (Nodo nodo in nodos)
             {
                 if (nodo.tipo == 'H' && nodo.claves.Contains(dato))
                 {
@@ -100,9 +100,9 @@ namespace EstructurasArchivos
             return null;
         }
 
-        public NodoArbol GetVecinoIzq(NodoArbol nodo)
+        public Nodo GetVecinoIzq(Nodo nodo)
         {
-            NodoArbol padre = GetPadre(nodo);
+            Nodo padre = GetPadre(nodo);
             int index_nodo = padre.apuntadores.IndexOf(nodo.direccion);
             if (index_nodo != 0)
             {
@@ -112,10 +112,19 @@ namespace EstructurasArchivos
                 return null;
         }
 
-        public NodoArbol GetVecinoDer(NodoArbol nodo)
+        public Nodo GetVecinoDer(Nodo nodo)
         {
-            NodoArbol padre = GetPadre(nodo);
-            int index_nodo = padre.apuntadores.IndexOf(nodo.direccion);
+            Nodo padre = GetPadre(nodo);
+            int index_nodo;
+            if (padre != null)
+            {
+                index_nodo = padre.apuntadores.IndexOf(nodo.direccion);
+            }
+            else
+            {
+                return null;
+            }
+
             if (index_nodo < padre.apuntadores.Count - 1)
             {
                 return GetNodo(padre.apuntadores[index_nodo + 1]);
@@ -124,9 +133,9 @@ namespace EstructurasArchivos
                 return null;
         }
 
-        public bool CheckMismoPadre(NodoArbol nodo1, NodoArbol nodo2)
+        public bool CheckMismoPadre(Nodo nodo1, Nodo nodo2)
         {
-            NodoArbol padre = GetPadre(nodo1);
+            Nodo padre = GetPadre(nodo1);
             return padre.apuntadores.Contains(nodo2.direccion);
         }
     }

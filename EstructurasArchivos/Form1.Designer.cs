@@ -725,7 +725,7 @@
             // 
             this.label20.AutoSize = true;
             this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 16.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label20.Location = new System.Drawing.Point(201, 82);
+            this.label20.Location = new System.Drawing.Point(6, 118);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(223, 32);
             this.label20.TabIndex = 66;
@@ -783,7 +783,7 @@
             // 
             // MuestraIndice
             // 
-            this.MuestraIndice.Location = new System.Drawing.Point(430, 174);
+            this.MuestraIndice.Location = new System.Drawing.Point(442, 160);
             this.MuestraIndice.Name = "MuestraIndice";
             this.MuestraIndice.Size = new System.Drawing.Size(177, 34);
             this.MuestraIndice.TabIndex = 72;
@@ -813,7 +813,7 @@
             // 
             // muestraIndiceSecundario
             // 
-            this.muestraIndiceSecundario.Location = new System.Drawing.Point(430, 134);
+            this.muestraIndiceSecundario.Location = new System.Drawing.Point(442, 120);
             this.muestraIndiceSecundario.Name = "muestraIndiceSecundario";
             this.muestraIndiceSecundario.Size = new System.Drawing.Size(177, 34);
             this.muestraIndiceSecundario.TabIndex = 75;
@@ -843,9 +843,9 @@
             // 
             // arbol_primario
             // 
-            this.arbol_primario.Location = new System.Drawing.Point(247, 176);
+            this.arbol_primario.Location = new System.Drawing.Point(235, 160);
             this.arbol_primario.Name = "arbol_primario";
-            this.arbol_primario.Size = new System.Drawing.Size(177, 34);
+            this.arbol_primario.Size = new System.Drawing.Size(201, 34);
             this.arbol_primario.TabIndex = 78;
             this.arbol_primario.Text = "Arbol Primario";
             this.arbol_primario.UseVisualStyleBackColor = true;
@@ -853,9 +853,9 @@
             // 
             // arbol_secundario
             // 
-            this.arbol_secundario.Location = new System.Drawing.Point(247, 134);
+            this.arbol_secundario.Location = new System.Drawing.Point(235, 120);
             this.arbol_secundario.Name = "arbol_secundario";
-            this.arbol_secundario.Size = new System.Drawing.Size(177, 34);
+            this.arbol_secundario.Size = new System.Drawing.Size(201, 34);
             this.arbol_secundario.TabIndex = 79;
             this.arbol_secundario.Text = "Arbol Secundario";
             this.arbol_secundario.UseVisualStyleBackColor = true;

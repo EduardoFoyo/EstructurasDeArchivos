@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="EstructurasArchivos.Arbol">
+    <Position X="6.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAoAQCAAAASAQBCAAAAAAAAAAAAAAAAAIQ=</HashCode>
+      <FileName>Arbol.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.ArbolPrimario">
+    <Position X="2.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAgAADAAAAAAAACAgQACAACAQAAQIABAIBAAAIA=</HashCode>
+      <FileName>ArbolPrimario.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.ArbolSecundario">
+    <Position X="4.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EgEQAgBBEDAgEACAAACAAQBCAAAAwEQIAAAABBAAAIA=</HashCode>
+      <FileName>ArbolSecundario.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.Atributo">
+    <Position X="13.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAARAEAAIAAIACAAAIAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>Atributo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.Entidad">
+    <Position X="6.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAACAAAAIACAAAAYAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>Entidad.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.cargarAtributos">
+    <Position X="9.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>/7SuZQJAoaU98FIsAjWSQGHHQoAooVyJbrOAuryUgjU=</HashCode>
+      <FileName>Form1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.Indice">
+    <Position X="13.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAACAgAAAAAACAEAACAAAwAAAAAAAAACAAAgA=</HashCode>
+      <FileName>Indice.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.IndiceSecundario">
+    <Position X="8" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAiACAAAAAAACCAEAACAIAwAAAAAAAAAAAAggA=</HashCode>
+      <FileName>IndiceSecundario.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.Nodo">
+    <Position X="1" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAABEAAEAAAIIAAAQAAQAAAAAAAABAACAAQCAAAAAA=</HashCode>
+      <FileName>Nodo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.Program">
+    <Position X="11.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.Properties.Resources">
+    <Position X="11.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAABEAAAAQAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EstructurasArchivos.Properties.Settings">
+    <Position X="11.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

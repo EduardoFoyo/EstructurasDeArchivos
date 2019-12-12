@@ -17,9 +17,9 @@ namespace EstructurasArchivos
         FileStream dataFile;
         FileStream indexFile;
         FileStream indexSecundarioFile;
-        FileStream indexArbolPrimarioFile;
-        FileStream indexArbolSecundarioFile;
         FileStream archivoArbol;
+
+        long modificar = -1;
 
         public const int TAMANIO_BLOQUE = 2048;
 
@@ -761,12 +761,6 @@ namespace EstructurasArchivos
             BinaryWriter isdw = null;
             BinaryReader isdr = null;
 
-            BinaryWriter iapdw = null;
-            BinaryReader iapdr = null;
-
-            BinaryWriter iasdw = null;
-            BinaryReader iasdr = null;
-
 
             for (int i = 0; i < listAtributos.Count; i++)
             {
@@ -872,44 +866,8 @@ namespace EstructurasArchivos
 
                 if (contArbolSecundario == 1)
                 {
-                    //Atributo atributo_secu_arbol = atributos[idx_atributo_secu_arbol];
-                    //AccionesArbolSecundario(atributoArbolSecundario, dataFile.Length, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value));
-                }
-
-                /*if (contArbolPrimario == 1)
-                {
-                    //CAMBIOS QUE NO CHEQUE SI FUNCIONAN
-                    string nomArchivoIndex = idAtributoArbolPrimario + ".idx";
-                    try
-                    {
-                        indexArbolPrimarioFile = new FileStream(nomArchivoIndex, FileMode.Create);
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                    indexArbolPrimarioFile.Close();
-                    indexArbolPrimarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
-                    iapdw = new BinaryWriter(indexArbolPrimarioFile);
-                    iapdr = new BinaryReader(indexArbolPrimarioFile);
-                }*/
-
-                if (contArbolSecundario == 1)
-                {
-                    //CAMBIOS QUE NO CHEQUE SI FUNCIONAN
-                    string nomArchivoIndex = idAtributoArbolSecundario + ".idx";
-                    try
-                    {
-                        indexArbolSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Create);
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                    indexArbolSecundarioFile.Close();
-                    indexArbolSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
-                    iasdw = new BinaryWriter(indexArbolSecundarioFile);
-                    iasdr = new BinaryReader(indexArbolSecundarioFile);
+                    Atributo atributo_secu_arbol = listAtributos[num_arbol_secundario];
+                    AccionesArbolSecundario(atributoArbolSecundario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_secundario].Value), num_arbol_secundario);
                 }
 
 
@@ -1057,6 +1015,12 @@ namespace EstructurasArchivos
                         return;
                     }
                     AccionesArbolPrimario(atributoArbolPrimario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_primario].Value), dataFile.Length);
+                }
+
+                if (contArbolSecundario == 1)
+                {
+                    Atributo atributo_secu_arbol = listAtributos[num_arbol_secundario];
+                    AccionesArbolSecundario(atributoArbolSecundario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[num_arbol_secundario].Value), num_arbol_secundario);
                 }
 
                 if (contIndices == 1)
@@ -1564,7 +1528,8 @@ namespace EstructurasArchivos
 
         public void actualizaRegistro()
         {
-            MessageBox.Show("Insertado");
+            Atributo atributoArbolPrimario = null;
+            Atributo atributoArbolSecundario = null;
             int num_atributo_ordenar = 0;
             int num_indice = 0;
             int num_indice_secundario = 0;
@@ -1581,6 +1546,13 @@ namespace EstructurasArchivos
             int tipo_registro_secundario = 0;
             bool existe = false;
             long dir = 0;
+            int num_arbol_primario = 0;
+            int num_arbol_secundario = 0;
+            string idAtributoArbolPrimario = "";
+            string idAtributoArbolSecundario = "";
+            int contArbolPrimario = 0;
+            int contArbolSecundario = 0;
+
             int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
             guardarAtributos(entidadInsertarEntidad.Text);
 
@@ -1617,6 +1589,20 @@ namespace EstructurasArchivos
                     idAtributoSecundario = listAtributos[i].id;
                     num_indice_secundario = i;
                     contIndicesSecundario++;
+                }
+                else if (listAtributos[i].tipoId == 4)
+                {
+                    atributoArbolPrimario = listAtributos[i];
+                    idAtributoArbolPrimario = listAtributos[i].id;
+                    num_arbol_primario = i;
+                    contArbolPrimario++;
+                }
+                else if (listAtributos[i].tipoId == 5)
+                {
+                    atributoArbolSecundario = listAtributos[i];
+                    idAtributoArbolSecundario = listAtributos[i].id;
+                    num_arbol_secundario = i;
+                    contArbolSecundario++;
                 }
             }
 
@@ -1666,6 +1652,20 @@ namespace EstructurasArchivos
                     indexSecundarioFile = new FileStream(nomArchivoIndex, FileMode.Open, FileAccess.ReadWrite);
                     isdw = new BinaryWriter(indexSecundarioFile);
                     isdr = new BinaryReader(indexSecundarioFile);
+                }
+
+                if (contArbolPrimario == 1)
+                {
+                    if (!CondicionesIndPrimarioArbol(atributoArbolPrimario, Convert.ToInt32(editaRegistro.SelectedCells[num_arbol_primario].Value)))
+                    {
+                        return;
+                    }
+                    AccionesArbolPrimario(atributoArbolPrimario, Convert.ToInt32(editaRegistro.SelectedCells[num_arbol_primario].Value), modificar);
+                }
+
+                if (contArbolSecundario == 1)
+                {
+                    AccionesArbolSecundario(atributoArbolSecundario, Convert.ToInt32(editaRegistro.SelectedCells[num_arbol_secundario].Value), num_arbol_secundario);
                 }
 
 
@@ -1850,6 +1850,21 @@ namespace EstructurasArchivos
                     }
                 }
 
+                if (contArbolPrimario == 1)
+                {
+                    if (!CondicionesIndPrimarioArbol(atributoArbolPrimario, Convert.ToInt32(editaRegistro.SelectedCells[num_arbol_primario].Value)))
+                    {
+                        return;
+                    }
+                    AccionesArbolPrimario(atributoArbolPrimario, Convert.ToInt32(editaRegistro.SelectedCells[num_arbol_primario].Value), modificar);
+                }
+
+                if (contArbolSecundario == 1)
+                {
+                    AccionesArbolSecundarioModificacion(atributoArbolSecundario, Convert.ToInt32(editaRegistro.SelectedCells[num_arbol_secundario].Value), num_arbol_secundario, modificar);
+                }
+
+
                 if (contIndicesSecundario == 1)
                 {
                     bool existe_secundario = false;
@@ -1926,7 +1941,7 @@ namespace EstructurasArchivos
                                 if (actual == -1)
                                 {
                                     indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
-                                    isdw.Write(dataFile.Length);
+                                    isdw.Write(modificar);
                                     break;
                                 }
                             } while (true);
@@ -1961,7 +1976,7 @@ namespace EstructurasArchivos
                                     }
                                     isdw.Write((long)-1);
                                     indexSecundarioFile.Position = nuevo_bloque;
-                                    isdw.Write(dataFile.Length);
+                                    isdw.Write(modificar);
                                 }
                                 dir_escribir = indexSecundarioFile.Position;
                             } while (dir_actual_archivo != (long)-1);
@@ -2008,7 +2023,7 @@ namespace EstructurasArchivos
                                 if (actual == -1)
                                 {
                                     indexSecundarioFile.Position = indexSecundarioFile.Position - 8;
-                                    isdw.Write(dataFile.Length);
+                                    isdw.Write(modificar);
                                     break;
                                 }
                             } while (true);
@@ -2044,7 +2059,7 @@ namespace EstructurasArchivos
                                     isdw.Write((long)-1);
                                     indexSecundarioFile.Position = nuevo_bloque;
                                     MessageBox.Show(dataFile.Length.ToString());
-                                    isdw.Write(dataFile.Length);
+                                    isdw.Write(modificar);
                                 }
                                 dir_escribir = indexSecundarioFile.Position;
                             } while (dir_actual_archivo != (long)-1);
@@ -2091,7 +2106,7 @@ namespace EstructurasArchivos
                                 int nuevo_int = Convert.ToInt32(editaRegistro.SelectedCells[num_indice].Value);
                                 indexFile.Position = indexFile.Position - 8 - 4;
                                 idw.Write(nuevo_int);
-                                idw.Write(dataFile.Length);
+                                idw.Write(modificar);
                                 break;
                             }
                             else
@@ -2100,14 +2115,14 @@ namespace EstructurasArchivos
                                 indexFile.Position = indexFile.Position - 8 - tam_registro;
                                 nuevo_string = nuevo_string.PadRight(tam_registro - 1);
                                 idw.Write(nuevo_string);
-                                idw.Write(dataFile.Length);
+                                idw.Write(modificar);
                                 break;
                             }
                         }
                     }
 
-                    dataFile.Position = dataFile.Length;
-                    dbw.Write(dataFile.Length);
+                    dataFile.Position = modificar;
+                    dbw.Write(modificar);
                     for (int i = 0; i < editaRegistro.SelectedCells.Count; i++)
                     {
                         if (listAtributos[i].tipo == 'E')
@@ -2165,8 +2180,8 @@ namespace EstructurasArchivos
                             {
                                 MessageBox.Show("Entro uno nuevo a ordenar por encima");
                                 file.Position = listEntidades[clave_entidad].direccion + 56;
-                                binaryWriter.Write(dataFile.Length - tamaño_registro);
-                                dataFile.Position = dataFile.Length - 8;
+                                binaryWriter.Write(modificar);
+                                dataFile.Position = modificar + tamaño_registro - 8;
                                 dbw.Write(aux_dir_anterior);
                             }
                             else
@@ -2182,7 +2197,7 @@ namespace EstructurasArchivos
                                     if (apunta == (long)-1)
                                     {
                                         dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
-                                        dbw.Write(dataFile.Length - tamaño_registro);
+                                        dbw.Write(modificar);
                                         break;
                                     }
                                     else
@@ -2193,9 +2208,9 @@ namespace EstructurasArchivos
                                         if (nuevo_int < int_anterior)
                                         {
                                             dataFile.Position = aux_dir_anterior + tamaño_registro - 8;
-                                            dbw.Write(dataFile.Length - tamaño_registro);
+                                            dbw.Write(modificar);
 
-                                            dataFile.Position = dataFile.Length - 8;
+                                            dataFile.Position = modificar + tamaño_registro - 8;
                                             dbw.Write(apunta);
                                             break;
                                         }
@@ -2229,8 +2244,8 @@ namespace EstructurasArchivos
                             if (string.Compare(nuevo_string, string_anterior) == -1)
                             {
                                 file.Position = listEntidades[clave_entidad].direccion + 56;
-                                binaryWriter.Write(dataFile.Length - tamaño_registro);
-                                dataFile.Position = dataFile.Length - 8;
+                                binaryWriter.Write(modificar);
+                                dataFile.Position = modificar + tamaño_registro - 8;
                                 dbw.Write(aux_dir_anterior);
                             }
                             else
@@ -2246,7 +2261,7 @@ namespace EstructurasArchivos
                                     if (apunta == (long)-1)
                                     {
                                         dataFile.Position = aux_dir_anterior + (tamaño_registro - 8);
-                                        dbw.Write(dataFile.Length - tamaño_registro);
+                                        dbw.Write(modificar);
                                         break;
                                     }
                                     else
@@ -2257,9 +2272,9 @@ namespace EstructurasArchivos
                                         if (string.Compare(nuevo_string, string_anterior) == -1)
                                         {
                                             dataFile.Position = aux_dir_anterior + tamaño_registro - 8;
-                                            dbw.Write(dataFile.Length - tamaño_registro);
+                                            dbw.Write(modificar);
 
-                                            dataFile.Position = dataFile.Length - 8;
+                                            dataFile.Position = modificar + tamaño_registro - 8;
                                             dbw.Write(apunta);
                                             break;
                                         }
@@ -2459,6 +2474,7 @@ namespace EstructurasArchivos
         public void eliminaRegistro()
         {
             Atributo atributo_primario = null;
+            Atributo atributo_secundario = null;
             string idArbolPrimarioEliminar = "";
             string idArbolSecundarioEliminar = "";
             int contArbolPrimario = 0;
@@ -2526,10 +2542,13 @@ namespace EstructurasArchivos
                     }
                     else if (listAtributos[i].tipoId == 5)
                     {
+                        atributo_secundario = listAtributos[i];
                         idArbolSecundarioEliminar = listAtributos[i].id;
                         contArbolSecundario++;
                     }
                 }
+
+                
 
                 long dir_siguiente;
 
@@ -2616,14 +2635,21 @@ namespace EstructurasArchivos
                                 BinaryReader abr = new BinaryReader(archivoArbol);
                                 BinaryWriter abW = new BinaryWriter(archivoArbol);
 
-                                EliminaDeArbolPrimario(atributo_primario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value));
-
-
-
+                                EliminaDeArbolPrimario(atributo_primario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[1].Value));
 
                                 archivoArbol.Close();
                             }
 
+                            if (contArbolSecundario == 1)
+                            {
+                                archivoArbol = new FileStream(idArbolSecundarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader abr = new BinaryReader(archivoArbol);
+                                BinaryWriter abW = new BinaryWriter(archivoArbol);
+
+                                EliminaDeArbolSecundario(atributo_secundario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[1].Value), Convert.ToInt64(tablaInsertarRegistro.SelectedCells[0].Value));
+
+                                archivoArbol.Close();
+                            }
                             break;
                         }
 
@@ -2665,17 +2691,7 @@ namespace EstructurasArchivos
 
                                 indexFile.Close();
                             }
-
-                            if (contArbolPrimario == 1)
-                            {
-                                archivoArbol = new FileStream(idArbolPrimarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
-                                BinaryReader abr = new BinaryReader(archivoArbol);
-                                BinaryWriter abW = new BinaryWriter(archivoArbol);
-
-                                EliminaDeArbolPrimario(atributo_primario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[i].Value));
-
-                                archivoArbol.Close();
-                            }
+                            
 
                             if (contIndicesSecundario == 1)
                             {
@@ -2698,6 +2714,29 @@ namespace EstructurasArchivos
                                 }
                                 indexSecundarioFile.Close();
                             }
+
+                            if (contArbolPrimario == 1)
+                            {
+                                archivoArbol = new FileStream(idArbolPrimarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader abr = new BinaryReader(archivoArbol);
+                                BinaryWriter abW = new BinaryWriter(archivoArbol);
+
+                                EliminaDeArbolPrimario(atributo_primario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[1].Value));
+
+                                archivoArbol.Close();
+                            }
+
+                            if (contArbolSecundario == 1)
+                            {
+                                archivoArbol = new FileStream(idArbolSecundarioEliminar + ".idx", FileMode.Open, FileAccess.ReadWrite);
+                                BinaryReader abr = new BinaryReader(archivoArbol);
+                                BinaryWriter abW = new BinaryWriter(archivoArbol);
+
+                                EliminaDeArbolSecundario(atributo_secundario, Convert.ToInt32(tablaInsertarRegistro.SelectedCells[1].Value), Convert.ToInt64(tablaInsertarRegistro.SelectedCells[0].Value));
+
+                                archivoArbol.Close();
+                            }
+
 
                             primero = true;
                             break;
@@ -2728,6 +2767,8 @@ namespace EstructurasArchivos
                 data[i - 1] = tablaInsertarRegistro.SelectedCells[i].Value.ToString();
             }
             editaRegistro.Rows.Add(data);
+
+            this.modificar = Convert.ToInt64(tablaInsertarRegistro.SelectedCells[0].Value);
 
 
             guardarDatos();
@@ -2799,7 +2840,7 @@ namespace EstructurasArchivos
 
 
 
-            List<NodoArbol> nodos = GetNodos(atributo);
+            List<Nodo> nodos = GetNodos(atributo);
             MessageBox.Show(nodos.Count.ToString());
             ArbolPrimario arbol = new ArbolPrimario(nodos);
             arbol.Show();
@@ -2810,10 +2851,11 @@ namespace EstructurasArchivos
         private void Arbol_secundario_Click(object sender, EventArgs e)
         {
             Atributo atributo = null;
+            int num_atributo = 0;
 
-            int num_arbol_primario = 0;
-            string idAtributoArbolPrimario = "";
-            int contArbolPrimario = 0;
+            int num_arbol_secundario = 0;
+            string idAtributoArbolSecundario = "";
+            int contArbolSecundario = 0;
             int clave_entidad = entidadInsertarEntidad.Items.IndexOf(entidadInsertarEntidad.Text);
 
             BinaryWriter iapdw = null;
@@ -2826,11 +2868,13 @@ namespace EstructurasArchivos
                 if (listAtributos[i].tipoId == 5)
                 {
                     atributo = listAtributos[i];
+                    num_atributo = i;
                 }
             }
 
-            List<NodoArbol> nodos = GetNodos(atributo);
-            ArbolSecundario arbol = new ArbolSecundario(nodos);
+            List<Nodo> nodos = GetNodos(atributo);
+
+            ArbolSecundario arbol = new ArbolSecundario(nodos,clave_entidad,num_atributo,listAtributos);
             arbol.Show();
 
         }
@@ -2854,9 +2898,9 @@ namespace EstructurasArchivos
             archivoArbol.Close();
         }
 
-        public List<NodoArbol> GetNodos(Atributo atributo)
+        public List<Nodo> GetNodos(Atributo atributo)
         {
-            List<NodoArbol> nodos = new List<NodoArbol>();
+            List<Nodo> nodos = new List<Nodo>();
             long apuntador_archivo = atributo.dirDatos;
 
             if (apuntador_archivo != -1)
@@ -2865,13 +2909,13 @@ namespace EstructurasArchivos
                 BinaryReader reader = new BinaryReader(archivoArbol);
 
                 reader.BaseStream.Position = apuntador_archivo;
-                NodoArbol nodo = new NodoArbol();
+                Nodo nodo = new Nodo();
                 nodo.tipo = System.Convert.ToChar(reader.ReadByte());
                 nodo.direccion = reader.ReadInt64();
                 nodo.claves = new List<int>();
                 nodo.apuntadores = new List<long>();
 
-                for (int i = 0; i < NodoArbol.K_ARBOL - 1; i++)
+                for (int i = 0; i < Nodo.CAP - 1; i++)
                 {
                     nodo.apuntadores.Add(reader.ReadInt64());
                     nodo.claves.Add(reader.ReadInt32());
@@ -2892,7 +2936,7 @@ namespace EstructurasArchivos
                 return nodos;
             else
             {
-                List<NodoArbol> temp = GetNodosFromDenso(atributo, nodos[0]);
+                List<Nodo> temp = GetNodosFromDenso(atributo, nodos[0]);
                 foreach (var item in temp)
                 {
                     nodos.Add(item);
@@ -2901,9 +2945,9 @@ namespace EstructurasArchivos
 
             return nodos;
         }
-        public List<NodoArbol> GetNodosFromDenso(Atributo atributo, NodoArbol denso)
+        public List<Nodo> GetNodosFromDenso(Atributo atributo, Nodo denso)
         {
-            List<NodoArbol> nodos = new List<NodoArbol>();
+            List<Nodo> nodos = new List<Nodo>();
             AbrirArchivoArbol(atributo);
 
             BinaryReader reader = new BinaryReader(archivoArbol);
@@ -2913,14 +2957,14 @@ namespace EstructurasArchivos
                 if (item == -1) break;
                 reader.BaseStream.Position = item;
 
-                NodoArbol nodo = new NodoArbol();
+                Nodo nodo = new Nodo();
 
                 nodo.tipo = System.Convert.ToChar(reader.ReadByte());
                 nodo.direccion = reader.ReadInt64();
                 nodo.claves = new List<int>();
                 nodo.apuntadores = new List<long>();
 
-                for (int i = 0; i < NodoArbol.K_ARBOL - 1; i++)
+                for (int i = 0; i < Nodo.CAP - 1; i++)
                 {
                     nodo.apuntadores.Add(reader.ReadInt64());
                     nodo.claves.Add(reader.ReadInt32());
@@ -2935,10 +2979,10 @@ namespace EstructurasArchivos
             int tam_denso = nodos.Count;
             for (int i = 0; i < tam_denso; i++)
             {
-                NodoArbol item = nodos[i];
+                Nodo item = nodos[i];
                 if (item.tipo != 'H')
                 {
-                    List<NodoArbol> temp;
+                    List<Nodo> temp;
                     temp = GetNodosFromDenso(atributo, item);
                     foreach (var item2 in temp)
                     {
@@ -3000,32 +3044,32 @@ namespace EstructurasArchivos
             // Si no existen nodos en el árbol, se crea la primera hoja y se le inserta la primera clave
             if (arbol.nodos.Count == 0)
             {
-                NodoArbol nuevo = CreaNodoArbol(arbol.atributo, 'H');
+                Nodo nuevo = CreaNodo(arbol.atributo, 'H');
                 nuevo.apuntadores[0] = direccion;
                 nuevo.claves[0] = dato;
-                EscribeNodoArbolEnArchivo(arbol.atributo, nuevo);
+                EscribeNodoEnArchivo(arbol.atributo, nuevo);
 
                 EscribeCabeceraIndice(arbol.atributo.direccion, nuevo.direccion);
             }
             // Si no contiene raíz se inserta en la única hoja que se tiene en el árbol
             else if (!arbol.ContieneRaiz())
             {
-                NodoArbol hoja_unica = arbol.nodos[0];
-                List<NodoArbol> nodos = InsertaDatoEnHoja(arbol.atributo, hoja_unica, dato, direccion);
+                Nodo hoja_unica = arbol.nodos[0];
+                List<Nodo> nodos = InsertaDatoEnHoja(arbol.atributo, hoja_unica, dato, direccion);
                 if (nodos.Count == 2)
                 {
-                    NodoArbol raiz = CreaNodoArbol(arbol.atributo, 'R');
+                    Nodo raiz = CreaNodo(arbol.atributo, 'R');
                     raiz.apuntadores[0] = nodos[0].direccion;
                     raiz.apuntadores[1] = nodos[1].direccion;
                     raiz.claves[0] = nodos[1].claves[0];
                     EscribeCabeceraIndice(arbol.atributo.direccion, raiz.direccion);
-                    EscribeNodoArbolEnArchivo(arbol.atributo, raiz);
+                    EscribeNodoEnArchivo(arbol.atributo, raiz);
                 }
             }
             else
             {
-                NodoArbol nodo_padre;
-                NodoArbol nodo_hoja = arbol.GetRaiz();
+                Nodo nodo_padre;
+                Nodo nodo_hoja = arbol.GetRaiz();
 
                 do
                 {
@@ -3034,7 +3078,7 @@ namespace EstructurasArchivos
                     nodo_hoja = arbol.GetNodo(nodo_padre.apuntadores[index]);
                 } while (nodo_hoja.tipo != 'H');
 
-                List<NodoArbol> nodos = InsertaDatoEnHoja(arbol.atributo, nodo_hoja, dato, direccion);
+                List<Nodo> nodos = InsertaDatoEnHoja(arbol.atributo, nodo_hoja, dato, direccion);
                 if (nodos.Count == 2)
                 {
                     ActualizaPadre(arbol, nodo_padre, nodos[1].claves[0], nodos[1].direccion);
@@ -3042,29 +3086,29 @@ namespace EstructurasArchivos
             }
         }
 
-        public List<NodoArbol> InsertaDatoEnHoja(Atributo atributo, NodoArbol nodo, int dato, long direccion)
+        public List<Nodo> InsertaDatoEnHoja(Atributo atributo, Nodo nodo, int dato, long direccion)
         {
             // Si no se pudo insertar significa que se tiene que dividir el nodo
             if (!nodo.InsertaEnHoja(dato, direccion))
             {
-                List<NodoArbol> res = DivideHoja(nodo, CreaNodoArbol(atributo, 'H'), dato, direccion);
-                EscribeNodoArbolEnArchivo(atributo, res[0]);
-                EscribeNodoArbolEnArchivo(atributo, res[1]);
+                List<Nodo> res = DivideHoja(nodo, CreaNodo(atributo, 'H'), dato, direccion);
+                EscribeNodoEnArchivo(atributo, res[0]);
+                EscribeNodoEnArchivo(atributo, res[1]);
                 return res;
             }
             // Si sí se insertó simplemente se actualiza en el archivo
             else
             {
-                EscribeNodoArbolEnArchivo(atributo, nodo);
-                List<NodoArbol> res = new List<NodoArbol> { nodo };
+                EscribeNodoEnArchivo(atributo, nodo);
+                List<Nodo> res = new List<Nodo> { nodo };
                 return res;
             }
         }
 
 
-        public List<NodoArbol> DivideHoja(NodoArbol nodo, NodoArbol nodo_nuevo2, int dato, long direccion)
+        public List<Nodo> DivideHoja(Nodo nodo, Nodo nodo_nuevo2, int dato, long direccion)
         {
-            int idx_medio = (NodoArbol.K_ARBOL - 1) / 2 - 1;
+            int idx_medio = (Nodo.CAP - 1) / 2 - 1;
 
             // Se mueven los datos según si es derecha o izquierda
             List<long> apuntadores = new List<long>();
@@ -3079,13 +3123,13 @@ namespace EstructurasArchivos
             claves.Add(dato);
             claves.Sort();
 
-            NodoArbol nodo_nuevo1 = new NodoArbol();
+            Nodo nodo_nuevo1 = new Nodo();
             nodo_nuevo1.tipo = nodo.tipo;
             nodo_nuevo1.direccion = nodo.direccion;
-            nodo_nuevo1.apuntadores[NodoArbol.K_ARBOL - 1] = nodo.apuntadores[NodoArbol.K_ARBOL - 1];
+            nodo_nuevo1.apuntadores[Nodo.CAP - 1] = nodo.apuntadores[Nodo.CAP - 1];
 
             int idx_viejo = 0, idx_nuevo = 0, idx_temp = 0;
-            for (int i = 0; i < NodoArbol.K_ARBOL; i++)
+            for (int i = 0; i < Nodo.CAP; i++)
             {
                 if (i <= idx_medio)
                 {
@@ -3105,16 +3149,16 @@ namespace EstructurasArchivos
                 }
             }
 
-            nodo_nuevo2.apuntadores[NodoArbol.K_ARBOL - 1] = nodo_nuevo1.apuntadores[NodoArbol.K_ARBOL - 1];
-            nodo_nuevo1.apuntadores[NodoArbol.K_ARBOL - 1] = nodo_nuevo2.direccion;
+            nodo_nuevo2.apuntadores[Nodo.CAP - 1] = nodo_nuevo1.apuntadores[Nodo.CAP - 1];
+            nodo_nuevo1.apuntadores[Nodo.CAP - 1] = nodo_nuevo2.direccion;
 
-            return new List<NodoArbol> { nodo_nuevo1, nodo_nuevo2 };
+            return new List<Nodo> { nodo_nuevo1, nodo_nuevo2 };
         }
 
-        void ActualizaPadre(Arbol arbol, NodoArbol nodo_padre, int dato, long direccion)
+        void ActualizaPadre(Arbol arbol, Nodo nodo_padre, int dato, long direccion)
         {
             if (nodo_padre.InsertaEnNodoDenso(dato, direccion))
-                EscribeNodoArbolEnArchivo(arbol.atributo, nodo_padre);
+                EscribeNodoEnArchivo(arbol.atributo, nodo_padre);
             else
             {
                 int tipo = nodo_padre.tipo;
@@ -3126,42 +3170,42 @@ namespace EstructurasArchivos
 
                 indices_ordenados.Add(dato);
                 indices_ordenados.Sort();
-                int idx_mitad = (NodoArbol.K_ARBOL - 1) / 2;
+                int idx_mitad = (Nodo.CAP - 1) / 2;
                 int clave_arriba = indices_ordenados[idx_mitad];
 
 
-                List<NodoArbol> nodos_intermedios = DivideNodoDenso(indices_ordenados, nodo_padre, CreaNodoArbol(arbol.atributo, 'I'), dato, direccion);
+                List<Nodo> nodos_intermedios = DivideNodoDenso(indices_ordenados, nodo_padre, CreaNodo(arbol.atributo, 'I'), dato, direccion);
 
-                EscribeNodoArbolEnArchivo(arbol.atributo, nodos_intermedios[0]);
-                EscribeNodoArbolEnArchivo(arbol.atributo, nodos_intermedios[1]);
+                EscribeNodoEnArchivo(arbol.atributo, nodos_intermedios[0]);
+                EscribeNodoEnArchivo(arbol.atributo, nodos_intermedios[1]);
 
                 if (tipo == 'R')
                 {
-                    NodoArbol nueva_raiz = CreaNodoArbol(arbol.atributo, 'R');
+                    Nodo nueva_raiz = CreaNodo(arbol.atributo, 'R');
                     nueva_raiz.apuntadores[0] = nodos_intermedios[0].direccion;
                     nueva_raiz.apuntadores[1] = nodos_intermedios[1].direccion;
                     nueva_raiz.claves[0] = clave_arriba;
                     EscribeCabeceraIndice(arbol.atributo.direccion, nueva_raiz.direccion);
-                    EscribeNodoArbolEnArchivo(arbol.atributo, nueva_raiz);
+                    EscribeNodoEnArchivo(arbol.atributo, nueva_raiz);
                 }
                 else
                 {
-                    NodoArbol nodo_padre_temp = arbol.GetPadre(nodos_intermedios[0]);
+                    Nodo nodo_padre_temp = arbol.GetPadre(nodos_intermedios[0]);
                     ActualizaPadre(new Arbol(GetNodos(arbol.atributo), arbol.atributo), nodo_padre_temp, clave_arriba, nodos_intermedios[1].direccion);
                 }
             }
         }
 
-        public List<NodoArbol> DivideNodoDenso(List<int> claves, NodoArbol nodo, NodoArbol nodo_nuevo2, int dato, long direccion)
+        public List<Nodo> DivideNodoDenso(List<int> claves, Nodo nodo, Nodo nodo_nuevo2, int dato, long direccion)
         {
-            int idx_medio = (NodoArbol.K_ARBOL - 1) / 2;
+            int idx_medio = (Nodo.CAP - 1) / 2;
 
             List<long> apuntadores = new List<long>();
 
             foreach (var item in nodo.apuntadores)
                 apuntadores.Add(item);
 
-            NodoArbol nodo_nuevo1 = new NodoArbol();
+            Nodo nodo_nuevo1 = new Nodo();
             nodo_nuevo1.tipo = nodo.tipo;
             nodo_nuevo1.direccion = nodo.direccion;
 
@@ -3174,7 +3218,7 @@ namespace EstructurasArchivos
 
 
             int idx_viejo = 0, idx_nuevo = 0, idx_temp = 0;
-            for (int i = 0; i < NodoArbol.K_ARBOL; i++)
+            for (int i = 0; i < Nodo.CAP; i++)
             {
                 if (i < idx_medio)
                 {
@@ -3193,29 +3237,29 @@ namespace EstructurasArchivos
                     nodo_nuevo2.claves[idx_nuevo++] = claves[i];
                 }
             }
-            return new List<NodoArbol> { nodo_nuevo1, nodo_nuevo2 };
+            return new List<Nodo> { nodo_nuevo1, nodo_nuevo2 };
         }
 
-        public void EscribeNodoArbolEnArchivo(Atributo atributo, NodoArbol nodo)
+        public void EscribeNodoEnArchivo(Atributo atributo, Nodo nodo)
         {
             AbrirArchivoArbol(atributo);
             BinaryWriter bn = new BinaryWriter(archivoArbol);
             bn.BaseStream.Position = nodo.direccion;
             bn.Write(nodo.tipo);
             bn.Write(nodo.direccion);
-            for (int i = 0; i < NodoArbol.K_ARBOL; i++)
+            for (int i = 0; i < Nodo.CAP; i++)
             {
                 bn.Write(nodo.apuntadores[i]);
-                if (i != NodoArbol.K_ARBOL - 1)
+                if (i != Nodo.CAP - 1)
                     bn.Write(nodo.claves[i]);
             }
             CerrarArchivoArbol();
         }
 
-        public NodoArbol CreaNodoArbol(Atributo atributo, char tipo)
+        public Nodo CreaNodo(Atributo atributo, char tipo)
         {
             AbrirArchivoArbol(atributo);
-            NodoArbol nodo = new NodoArbol();
+            Nodo nodo = new Nodo();
             nodo.tipo = tipo;
             nodo.direccion = archivoArbol.Length;
             CerrarArchivoArbol();
@@ -3225,14 +3269,32 @@ namespace EstructurasArchivos
         public void EliminaDeArbolPrimario(Atributo atributo, int dato)
         {
             Arbol arbol = new Arbol(GetNodos(atributo), atributo);
-            NodoArbol nodo = arbol.GetNodoDeLlave(dato);
+            Nodo nodo = arbol.GetNodoDeLlave(dato);
             long direccion = nodo.GetApuntadorHoja(dato);
             EliminaDeArbol(arbol, nodo, dato, direccion);
         }
 
-        bool EliminaDeArbol(Arbol arbol, NodoArbol nodo, int dato, long direccion)
+        public void EliminaDeArbolSecundario(Atributo atributo, int dato, long direccion)
         {
-            int tam_minimo = (NodoArbol.K_ARBOL - 1) / 2;
+            Arbol arbol = new Arbol(GetNodos(atributo), atributo);
+            Nodo nodo = arbol.GetNodoDeLlave(dato);
+            long dir = arbol.GetDireccion(dato);
+            List<long> bloque_denso = GetBloqueDenso(atributo, dir);
+            bloque_denso.Remove(direccion);
+
+            if (bloque_denso.Count == 0)
+            {
+                EliminaDeArbol(arbol, nodo, dato, dir);
+            }
+            else
+            {
+                EscribeBloqueDenso(atributo, bloque_denso, dir);
+            }
+        }
+
+        bool EliminaDeArbol(Arbol arbol, Nodo nodo, int dato, long direccion)
+        {
+            int tam_minimo = (Nodo.CAP - 1) / 2;
             char tipo = nodo.tipo;
 
             if (tipo == 'H')
@@ -3246,15 +3308,16 @@ namespace EstructurasArchivos
                     return false;
             }
 
-            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+            EscribeNodoEnArchivo(arbol.atributo, nodo);
 
             if (tipo != 'R')
             {
                 if (nodo.CountClaves() < tam_minimo)
                 {
-                    NodoArbol padre = arbol.GetPadre(nodo);
-                    NodoArbol vecino_der = arbol.GetVecinoDer(nodo);
-                    NodoArbol vecino_izq = arbol.GetVecinoIzq(nodo);
+                    Nodo padre = arbol.GetPadre(nodo);
+                    Nodo vecino_der = arbol.GetVecinoDer(nodo);
+                    Nodo vecino_izq = arbol.GetVecinoIzq(nodo);
+                   
 
                     if (vecino_der != null && arbol.CheckMismoPadre(nodo, vecino_der) && vecino_der.CountClaves() - 1 >= tam_minimo)
                     {
@@ -3265,14 +3328,14 @@ namespace EstructurasArchivos
 
                             if (!vecino_der.EliminaEnHoja(prestado_cve))
                                 return false;
-                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+                            EscribeNodoEnArchivo(arbol.atributo, vecino_der);
 
                             nodo.InsertaEnHoja(prestado_cve, prestado_dir);
-                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                            EscribeNodoEnArchivo(arbol.atributo, nodo);
 
                             int idx_actualizar_padre = padre.apuntadores.IndexOf(nodo.direccion);
                             padre.claves[idx_actualizar_padre] = vecino_der.claves[0];
-                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+                            EscribeNodoEnArchivo(arbol.atributo, padre);
                         }
                         else
                         {
@@ -3283,13 +3346,13 @@ namespace EstructurasArchivos
 
                             if (!vecino_der.EliminaEnNodoDenso(vecino_cve, vecino_dir))
                                 return false;
-                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+                            EscribeNodoEnArchivo(arbol.atributo, vecino_der);
 
                             padre.claves[idx_cve_padre] = vecino_cve;
-                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+                            EscribeNodoEnArchivo(arbol.atributo, padre);
 
                             nodo.InsertaEnNodoDenso(padre_cve, vecino_dir);
-                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                            EscribeNodoEnArchivo(arbol.atributo, nodo);
                         }
                     }
                     else if (vecino_izq != null && arbol.CheckMismoPadre(nodo, vecino_izq) && vecino_izq.CountClaves() - 1 >= tam_minimo)
@@ -3301,14 +3364,14 @@ namespace EstructurasArchivos
 
                             if (!vecino_izq.EliminaEnHoja(prestado_cve))
                                 return false;
-                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                            EscribeNodoEnArchivo(arbol.atributo, vecino_izq);
 
                             nodo.InsertaEnHoja(prestado_cve, prestado_dir);
-                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                            EscribeNodoEnArchivo(arbol.atributo, nodo);
 
                             int idx_actualizar_padre = padre.apuntadores.IndexOf(vecino_izq.direccion);
                             padre.claves[idx_actualizar_padre] = prestado_cve;
-                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+                            EscribeNodoEnArchivo(arbol.atributo, padre);
                         }
                         else
                         {
@@ -3319,13 +3382,13 @@ namespace EstructurasArchivos
 
                             if (!vecino_izq.EliminaEnNodoDenso(vecino_cve, vecino_dir))
                                 return false;
-                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                            EscribeNodoEnArchivo(arbol.atributo, vecino_izq);
 
                             padre.claves[idx_cve_padre] = vecino_cve;
-                            EscribeNodoArbolEnArchivo(arbol.atributo, padre);
+                            EscribeNodoEnArchivo(arbol.atributo, padre);
 
                             nodo.InsertaEnNodoDenso(padre_cve, vecino_dir);
-                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                            EscribeNodoEnArchivo(arbol.atributo, nodo);
                         }
                     }
                     else if (vecino_der != null && arbol.CheckMismoPadre(nodo, vecino_der))
@@ -3334,7 +3397,7 @@ namespace EstructurasArchivos
                         {
                             for (int i = 0; i < vecino_der.CountClaves(); i++)
                                 nodo.InsertaEnHoja(vecino_der.claves[i], vecino_der.apuntadores[i]);
-                            EscribeNodoArbolEnArchivo(arbol.atributo, nodo);
+                            EscribeNodoEnArchivo(arbol.atributo, nodo);
                             if (padre.tipo == 'R' && padre.CountClaves() == 1)
                             {
                                 EscribeCabeceraIndice(arbol.atributo.direccion, vecino_der.direccion);
@@ -3362,12 +3425,12 @@ namespace EstructurasArchivos
                             if (padre.tipo == 'R' && padre.CountClaves() == 1)
                             {
                                 vecino_der.tipo = 'R';
-                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+                                EscribeNodoEnArchivo(arbol.atributo, vecino_der);
                                 EscribeCabeceraIndice(arbol.atributo.direccion, vecino_der.direccion);
                             }
                             else
                             {
-                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_der);
+                                EscribeNodoEnArchivo(arbol.atributo, vecino_der);
                                 return EliminaDeArbol(arbol, padre, cve_padre, nodo.direccion);
                             }
                         }
@@ -3378,7 +3441,7 @@ namespace EstructurasArchivos
                         {
                             for (int i = 0; i < nodo.CountClaves(); i++)
                                 vecino_izq.InsertaEnHoja(nodo.claves[i], nodo.apuntadores[i]);
-                            EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                            EscribeNodoEnArchivo(arbol.atributo, vecino_izq);
                             if (padre.tipo == 'R' && padre.CountClaves() == 1)
                             {
                                 vecino_izq.tipo = 'R';
@@ -3406,12 +3469,12 @@ namespace EstructurasArchivos
                             if (padre.tipo == 'R' && padre.CountClaves() == 1)
                             {
                                 vecino_izq.tipo = 'R';
-                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                                EscribeNodoEnArchivo(arbol.atributo, vecino_izq);
                                 EscribeCabeceraIndice(arbol.atributo.direccion, vecino_izq.direccion);
                             }
                             else
                             {
-                                EscribeNodoArbolEnArchivo(arbol.atributo, vecino_izq);
+                                EscribeNodoEnArchivo(arbol.atributo, vecino_izq);
                                 return EliminaDeArbol(arbol, padre, cve_padre, nodo.direccion);
                             }
                         }
@@ -3425,7 +3488,7 @@ namespace EstructurasArchivos
             return true;
         }
 
-        /*public void AccionesArbolSecundario(Atributo atributo, RegistroDatos registro, int index_atributo)
+        public void AccionesArbolSecundarioModificacion(Atributo atributo, int dato, int index_atributo,long direccion)
         {
             // Si no hay archivo lo crea
             if (atributo.dirDatos == -1)
@@ -3435,7 +3498,6 @@ namespace EstructurasArchivos
             }
 
             Arbol arbol = new Arbol(GetNodos(atributo), atributo);
-            int dato = BitConverter.ToInt32(registro.atributos[index_atributo], 0);
 
             // Si ya contiene la clave, simplemente la inserta en su bloque
             if (arbol.ContieneClave(dato))
@@ -3443,7 +3505,7 @@ namespace EstructurasArchivos
                 //Sólo inserta la dirección del registro en el bloque denso
                 long dir = arbol.GetDireccion(dato);
                 List<long> bloque_denso = GetBloqueDenso(atributo, dir);
-                bloque_denso.Add(registro.direccion);
+                bloque_denso.Add(direccion);
                 bloque_denso.Sort();
                 EscribeBloqueDenso(atributo, bloque_denso, dir);
             }
@@ -3454,13 +3516,49 @@ namespace EstructurasArchivos
                 long direccion_bloque = GetTamanioArchivoIndice(atributo);
                 InicializaBloqueDensoSecundario(atributo, direccion_bloque);
                 List<long> bloque_denso = GetBloqueDenso(atributo, direccion_bloque);
-                bloque_denso.Add(registro.direccion);
+                bloque_denso.Add(direccion);
                 EscribeBloqueDenso(atributo, bloque_denso, direccion_bloque);
 
                 //Inserta en el árbol
                 InsercionArbol(arbol, dato, direccion_bloque);
             }
-        }*/
+        }
+
+        public void AccionesArbolSecundario(Atributo atributo, int dato, int index_atributo)
+        {
+            // Si no hay archivo lo crea
+            if (atributo.dirDatos == -1)
+            {
+                CrearArchivoIndice(atributo);
+                EscribeCabeceraIndice(atributo.direccion, 0);
+            }
+
+            Arbol arbol = new Arbol(GetNodos(atributo), atributo);
+
+            // Si ya contiene la clave, simplemente la inserta en su bloque
+            if (arbol.ContieneClave(dato))
+            {
+                //Sólo inserta la dirección del registro en el bloque denso
+                long dir = arbol.GetDireccion(dato);
+                List<long> bloque_denso = GetBloqueDenso(atributo, dir);
+                bloque_denso.Add(dataFile.Length);
+                bloque_denso.Sort();
+                EscribeBloqueDenso(atributo, bloque_denso, dir);
+            }
+            // Sino crea el nuevo bloque y la dirección del bloque se inserta en el árbol con la clave de búsqueda.
+            else
+            {
+                //Crea nuevo bloque denso con la dirección del registro dentro
+                long direccion_bloque = GetTamanioArchivoIndice(atributo);
+                InicializaBloqueDensoSecundario(atributo, direccion_bloque);
+                List<long> bloque_denso = GetBloqueDenso(atributo, direccion_bloque);
+                bloque_denso.Add(dataFile.Length);
+                EscribeBloqueDenso(atributo, bloque_denso, direccion_bloque);
+
+                //Inserta en el árbol
+                InsercionArbol(arbol, dato, direccion_bloque);
+            }
+        }
 
         public List<long> GetBloqueDenso(Atributo atributo, long cabecera)
         {

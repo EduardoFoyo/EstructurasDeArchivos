@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 
 namespace EstructurasArchivos
 {
-    public class NodoArbol
+    public class Nodo
     {
         public char tipo;
         public long direccion;
         public List<long> apuntadores;
         public List<int> claves;
 
-        public const int K_ARBOL = 5;
-        public NodoArbol()
+        public const int CAP = 5;
+        public Nodo()
         {
             apuntadores = new List<long>();
             claves = new List<int>();
-            for (int i = 0; i < K_ARBOL; i++)
+            for (int i = 0; i < CAP; i++)
             {
                 apuntadores.Add(-1);
-                if (i != K_ARBOL - 1)
+                if (i != CAP - 1)
                     claves.Add(-1);
             }
         }
@@ -30,7 +30,7 @@ namespace EstructurasArchivos
         // Inserta una clave EN ORDEN dentro de una hoja
         public bool InsertaEnHoja(int dato, long direccion)
         {
-            if (CountClaves() < K_ARBOL - 1)
+            if (CountClaves() < CAP - 1)
             {
                 List<long> direcciones_temp = new List<long>();
                 List<int> claves_temp = new List<int>();
@@ -62,7 +62,7 @@ namespace EstructurasArchivos
         // Inserta una clave EN ORDEN dentro de una nodo denso (intermedio o raiz)
         public bool InsertaEnNodoDenso(int dato, long direccion)
         {
-            if (CountClaves() < K_ARBOL - 1)
+            if (CountClaves() < CAP - 1)
             {
                 List<long> direcciones_temp = new List<long>();
                 List<int> claves_temp = new List<int>();
@@ -100,7 +100,7 @@ namespace EstructurasArchivos
             if (claves.Count == 0) return 0;
             int index;
 
-            for (index = 0; index < K_ARBOL - 1; index++)
+            for (index = 0; index < CAP - 1; index++)
             {
                 if (dato < claves[index] || claves[index] == -1)
                     return index;
@@ -129,8 +129,8 @@ namespace EstructurasArchivos
             if (claves.Contains(dato))
             {
                 int index = claves.IndexOf(dato);
-                long ap_sig = apuntadores[K_ARBOL - 1];
-                apuntadores[K_ARBOL - 1] = (long)-1;
+                long ap_sig = apuntadores[CAP - 1];
+                apuntadores[CAP - 1] = (long)-1;
 
                 claves.RemoveAt(index);
                 apuntadores.RemoveAt(index);
@@ -162,3 +162,4 @@ namespace EstructurasArchivos
         }
     }
 }
+
